@@ -28,6 +28,14 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interf
 
 ---
 
+### API Documentation
+
+Oridium exposes a global API through `getgenv().Oridium`.
+
+ Full documentation: [**docs/API.md**](https://github.com/ideBob/Oridium-Interface/blob/main/docs/API.md)
+
+---
+
 ### Credits
 
 - UI Library: [LinoriaLib](https://github.com/violin-suzutsuki/LinoriaLib)
