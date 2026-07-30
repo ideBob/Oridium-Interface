@@ -28,11 +28,15 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interf
 
 ---
 
-### API Documentation
+### Documentation
 
-Oridium exposes a global API through `getgenv().Oridium`.
-
- Full documentation: [**docs/API.md**](https://github.com/ideBob/Oridium-Interface/blob/main/docs/API.md)
+| Document | Description |
+|---------|-------------|
+| [Installation](docs/Installation.md) | How to load the script |
+| [Features](docs/Features.md) | Detailed list of all features |
+| [Keybinds](docs/Keybinds.md) | Default keys and how to change them |
+| [API](docs/API.md) | `getgenv().Oridium` documentation |
+| [FAQ](docs/FAQ.md) | Common questions & answers |
 
 ---
 
