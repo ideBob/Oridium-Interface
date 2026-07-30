@@ -1,22 +1,16 @@
+<div align="center">
+
 # Oridium Interface
 
-**Advanced Da Hood Script** made by [@cuakieffer](https://github.com/ideBob)
+**Advanced Da Hood Script**
 
----
+Made by [@cuakieffer](https://github.com/ideBob)
 
-### Features
+![Luau](https://img.shields.io/badge/Luau-000000?style=for-the-badge&logo=roblox&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Active-00ff88?style=for-the-badge)
+![UI](https://img.shields.io/badge/UI-Linoria-9b59b6?style=for-the-badge)
 
-- Smooth Aimbot (Keybind: Q)
-- Silent Aim
-- Triggerbot with Mouse FOV
-- ESP (Boxes, Health Bar, Distance)
-- Aimviewer
-- High Jump + JumpPower Slider
-- Anti Detection
-- Good Boy / Bad Boy system with visual marks (✝ / †)
-- RGB UI Accent
-- Custom Thunderbolt Intro Animation
-- Configuration Saving
+</div>
 
 ---
 
@@ -28,15 +22,43 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interf
 
 ---
 
+### Features
+
+- **Aimbot** (Smooth + Keybind Q)
+- **Silent Aim**
+- **Triggerbot** with Mouse FOV
+- **ESP** (Box, Healthbar, Distance)
+- **Aimviewer**
+- **High Jump** + Slider
+- **Anti Detection**
+- **Good Boy / Bad Boy** system with visual marks
+- **RGB UI Accent**
+- Custom Thunderbolt Intro Animation
+- Config Saving
+
+---
+
 ### Documentation
 
 | Document | Description |
 |---------|-------------|
 | [Installation](docs/Installation.md) | How to load the script |
-| [Features](docs/Features.md) | Detailed list of all features |
-| [Keybinds](docs/Keybinds.md) | Default keys and how to change them |
-| [API](docs/API.md) | `getgenv().Oridium` documentation |
-| [FAQ](docs/FAQ.md) | Common questions & answers |
+| [Features](docs/Features.md) | Detailed feature list |
+| [Keybinds](docs/Keybinds.md) | Default keys |
+| [API](docs/API.md) | `getgenv().Oridium` reference |
+| [FAQ](docs/FAQ.md) | Common questions |
+
+---
+
+### UI Preview
+
+> Screenshots coming soon.
+
+<!-- 
+You can upload images later and use them like this:
+
+![UI Preview](assets/ui-preview.png)
+-->
 
 ---
 
@@ -47,4 +69,8 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interf
 
 ---
 
-> Use at your own risk.
+<div align="center">
+
+**Use at your own risk.**
+
+</div>
