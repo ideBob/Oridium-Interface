@@ -129,26 +129,30 @@ local Window = Library:CreateWindow({
 })
 
 local Tabs = {
-    Blatant         = Window:AddTab('Blatant'),
-    Visuals         = Window:AddTab('Visuals'),
-    Player          = Window:AddTab('Player'),
-    ['Good/Bad']    = Window:AddTab('Good/Bad Boys'),
-    ['UI Settings'] = Window:AddTab('UI Settings'),
+    Blatant              = Window:AddTab('Blatant'),
+    Visuals              = Window:AddTab('Visuals'),
+    Player               = Window:AddTab('Player'),
+    ['Customization']    = Window:AddTab('Player Customization'),
+    ['Good/Bad']         = Window:AddTab('Good/Bad Boys'),
+    ['UI Settings']      = Window:AddTab('UI Settings'),
 }
 
-local CombatBox    = Tabs.Blatant:AddLeftGroupbox('Combat')
-local TriggerBox   = Tabs.Blatant:AddRightGroupbox('Triggerbot')
-local VisualsBox   = Tabs.Visuals:AddLeftGroupbox('ESP')
-local AimviewerBox = Tabs.Visuals:AddRightGroupbox('Aimviewer')
-local MovementBox  = Tabs.Player:AddLeftGroupbox('Movement')
-local AntiBox      = Tabs.Player:AddRightGroupbox('Anti Detection')
-local BoysBox      = Tabs['Good/Bad']:AddLeftGroupbox('Oridium Boys')
-local ActionsBox   = Tabs['Good/Bad']:AddRightGroupbox('Actions')
+local CombatBox     = Tabs.Blatant:AddLeftGroupbox('Combat')
+local TriggerBox    = Tabs.Blatant:AddRightGroupbox('Triggerbot')
+local VisualsBox    = Tabs.Visuals:AddLeftGroupbox('ESP')
+local AimviewerBox  = Tabs.Visuals:AddRightGroupbox('Aimviewer')
+local MovementBox   = Tabs.Player:AddLeftGroupbox('Movement')
+local AntiBox       = Tabs.Player:AddRightGroupbox('Anti Detection')
+local CustomBox     = Tabs['Customization']:AddLeftGroupbox('Accessories')
+local CustomInfoBox = Tabs['Customization']:AddRightGroupbox('Info')
+local BoysBox       = Tabs['Good/Bad']:AddLeftGroupbox('Oridium Boys')
+local ActionsBox    = Tabs['Good/Bad']:AddRightGroupbox('Actions')
 
 -- ==================== SERVICES & SHARED ====================
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local InsertService = game:GetService("InsertService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -171,6 +175,117 @@ local function isValidTarget(player)
         and player.Character:FindFirstChild("Humanoid")
         and player.Character.Humanoid.Health > 0
 end
+
+-- ==================== PLAYER CUSTOMIZATION ====================
+local CustomAssets = {
+    {Name = "Yabujin Shirt",       Id = 1350415618,      Type = "Shirt"},
+    {Name = "Tragedy",             Id = 13702160,         Type = "Face"},
+    {Name = "Hair",                Id = 105694273623487,  Type = "Accessory"},
+    {Name = "Black Eye Patch",     Id = 4528880486,       Type = "Accessory"},
+    {Name = "Black Horns",         Id = 140127383196216,  Type = "Accessory"},
+    {Name = "Glowing Beast Eyes",  Id = 1594010,          Type = "Face"},
+}
+
+local function isR15()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    return humanoid and humanoid.RigType == Enum.HumanoidRigType.R15
+end
+
+local function applyAsset(assetData)
+    local char = LocalPlayer.Character
+    if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    local id = assetData.Id
+    local assetType = assetData.Type
+
+    if assetType == "Shirt" then
+        local old = char:FindFirstChildOfClass("Shirt")
+        if old then old:Destroy() end
+        local shirt = Instance.new("Shirt")
+        shirt.ShirtTemplate = "rbxassetid://" .. id
+        shirt.Parent = char
+    elseif assetType == "Face" then
+        local head = char:FindFirstChild("Head")
+        if head then
+            local face = head:FindFirstChild("face") or head:FindFirstChildOfClass("Decal")
+            if face then
+                face.Texture = "rbxassetid://" .. id
+            end
+        end
+    else -- Accessory
+        local success, model = pcall(function()
+            return InsertService:LoadAsset(id)
+        end)
+        if success and model then
+            local accessory = model:FindFirstChildOfClass("Accessory")
+            if not accessory then
+                for _, child in ipairs(model:GetChildren()) do
+                    if child:IsA("Accessory") or child:IsA("Hat") or child:IsA("Accoutrement") then
+                        accessory = child
+                        break
+                    end
+                end
+            end
+            if accessory then
+                humanoid:AddAccessory(accessory:Clone())
+            end
+            model:Destroy()
+        end
+    end
+end
+
+local function loadAllCustom()
+    if not isR15() then
+        Library:Notify("Only works on R15 characters!", 3)
+        return
+    end
+
+    Library:Notify("Loading all accessories...", 2)
+
+    for _, asset in ipairs(CustomAssets) do
+        pcall(applyAsset, asset)
+        task.wait(0.15)
+    end
+
+    Library:Notify("All loaded! Resetting in 15 seconds...", 3)
+
+    task.wait(15)
+
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.Health = 0
+    end
+end
+
+-- UI for Customization
+for _, asset in ipairs(CustomAssets) do
+    CustomBox:AddLabel(asset.Name .. "  |  " .. tostring(asset.Id))
+end
+
+CustomBox:AddDivider()
+
+CustomBox:AddButton({
+    Text = 'Load All',
+    Func = function()
+        task.spawn(loadAllCustom)
+    end
+})
+
+CustomInfoBox:AddLabel('Only works on R15')
+CustomInfoBox:AddLabel('Loads all items then waits 15s')
+CustomInfoBox:AddLabel('and resets your character')
+CustomInfoBox:AddDivider()
+CustomInfoBox:AddLabel('Items included:')
+CustomInfoBox:AddLabel('- Yabujin Shirt')
+CustomInfoBox:AddLabel('- Tragedy')
+CustomInfoBox:AddLabel('- Hair')
+CustomInfoBox:AddLabel('- Black Eye Patch')
+CustomInfoBox:AddLabel('- Black Horns')
+CustomInfoBox:AddLabel('- Glowing Beast Eyes')
 
 -- ==================== GOOD / BAD BOYS MARKS ====================
 local function createMark(player, isGood)
@@ -882,7 +997,6 @@ MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', {
 
 Library.ToggleKeybind = Options.MenuKeybind
 
--- RGB Feature
 local rgbEnabled = false
 
 MenuGroup:AddToggle('RGBMode', {
@@ -906,14 +1020,10 @@ task.spawn(function()
         if rgbEnabled and Library then
             local hue = (tick() * 0.25) % 1
             local color = Color3.fromHSV(hue, 1, 1)
-
             Library.AccentColor = color
             Library.AccentColorDark = color:Lerp(Color3.new(0, 0, 0), 0.35)
-
             if Library.UpdateColorsUsingRegistry then
-                pcall(function()
-                    Library:UpdateColorsUsingRegistry()
-                end)
+                pcall(function() Library:UpdateColorsUsingRegistry() end)
             end
         end
         task.wait(0.03)
