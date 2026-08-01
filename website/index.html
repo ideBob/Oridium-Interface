@@ -1,361 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oridium Interface</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oridium Interface</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#fff;font-family:'Inter',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
 
-        body {
-            background: #000;
-            color: #fff;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-        }
+/* Snow */
+.snowflake{position:fixed;top:-12px;z-index:0;pointer-events:none;user-select:none;color:rgba(255,255,255,.3);animation:fall linear infinite}
+@keyframes fall{0%{transform:translateY(0) rotate(0deg);opacity:0}10%{opacity:.55}90%{opacity:.3}100%{transform:translateY(100vh) rotate(360deg);opacity:0}}
 
-        /* Snowflake Animation */
-        .snowflake {
-            position: fixed;
-            top: -10px;
-            color: rgba(255, 255, 255, 0.35);
-            font-size: 1em;
-            font-family: Arial, sans-serif;
-            text-shadow: 0 0 5px rgba(255,255,255,0.3);
-            animation: fall linear infinite;
-            z-index: 0;
-            pointer-events: none;
-            user-select: none;
-        }
+/* Layout */
+.wrap{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:72px 20px 56px}
+.center{text-align:center}
 
-        @keyframes fall {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.6;
-            }
-            90% {
-                opacity: 0.4;
-            }
-            100% {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
+/* Badge */
+.badge{display:inline-block;padding:5px 12px;border-radius:99px;font-size:11px;font-weight:500;letter-spacing:.4px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);margin-bottom:22px}
 
-        .container {
-            position: relative;
-            z-index: 1;
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 80px 24px 60px;
-            text-align: center;
-        }
+/* Title */
+h1{font-size:42px;font-weight:700;letter-spacing:-1.2px;margin-bottom:10px;background:linear-gradient(180deg,#fff 30%,rgba(255,255,255,.65));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{font-size:15px;color:rgba(255,255,255,.4);margin-bottom:40px;font-weight:400}
 
-        .badge {
-            display: inline-block;
-            padding: 6px 14px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            color: rgba(255,255,255,0.6);
-            margin-bottom: 28px;
-        }
+/* Copy Card */
+.card{background:#0a0a0a;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:22px;margin-bottom:28px;text-align:left;transition:border-color .25s}
+.card:hover{border-color:rgba(255,255,255,.13)}
+.card-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);margin-bottom:12px}
+.row{display:flex;align-items:center;gap:10px;background:#000;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px 14px}
+.code{flex:1;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px;color:rgba(255,255,255,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;user-select:all}
 
-        h1 {
-            font-size: 48px;
-            font-weight: 700;
-            letter-spacing: -1.5px;
-            margin-bottom: 12px;
-            background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.7) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+/* Copy Button */
+.btn-copy{background:#fff;color:#000;border:none;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap;min-width:78px}
+.btn-copy:hover{background:rgba(255,255,255,.88);transform:scale(1.03)}
+.btn-copy:active{transform:scale(.97)}
+.btn-copy.ok{background:#22c55e;color:#fff}
 
-        .subtitle {
-            font-size: 16px;
-            color: rgba(255,255,255,0.45);
-            margin-bottom: 48px;
-            font-weight: 400;
-        }
+/* Features Grid */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:36px}
+.item{background:#0a0a0a;border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:14px 16px;font-size:13.5px;color:rgba(255,255,255,.55);text-align:left;transition:border-color .2s}
+.item:hover{border-color:rgba(255,255,255,.12)}
+.item b{color:#fff;font-weight:600}
 
-        /* Copy Box */
-        .copy-box {
-            background: #0a0a0a;
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 28px;
-            margin-bottom: 32px;
-            text-align: left;
-            transition: border-color 0.3s ease;
-        }
+/* Links */
+.links{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 20px;border-radius:10px;font-size:13.5px;font-weight:500;text-decoration:none;transition:all .2s;font-family:inherit}
+.btn-w{background:#fff;color:#000}
+.btn-w:hover{background:rgba(255,255,255,.88);transform:translateY(-1px)}
+.btn-g{background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)}
+.btn-g:hover{color:#fff;border-color:rgba(255,255,255,.22)}
 
-        .copy-box:hover {
-            border-color: rgba(255,255,255,0.15);
-        }
+/* Footer */
+.foot{margin-top:52px;font-size:12.5px;color:rgba(255,255,255,.22)}
 
-        .copy-box-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: rgba(255,255,255,0.5);
-            margin-bottom: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-        }
-
-        .code-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #000;
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 10px;
-            padding: 14px 16px;
-        }
-
-        .code-text {
-            flex: 1;
-            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-            font-size: 13px;
-            color: rgba(255,255,255,0.75);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .copy-btn {
-            background: #fff;
-            color: #000;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .copy-btn:hover {
-            background: rgba(255,255,255,0.85);
-            transform: scale(1.03);
-        }
-
-        .copy-btn:active {
-            transform: scale(0.97);
-        }
-
-        .copy-btn.copied {
-            background: #22c55e;
-            color: #fff;
-        }
-
-        .copy-btn svg {
-            width: 15px;
-            height: 15px;
-        }
-
-        /* Features */
-        .features {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 40px;
-            text-align: left;
-        }
-
-        .feature {
-            background: #0a0a0a;
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 12px;
-            padding: 16px 18px;
-            font-size: 14px;
-            color: rgba(255,255,255,0.7);
-            transition: border-color 0.2s;
-        }
-
-        .feature:hover {
-            border-color: rgba(255,255,255,0.12);
-        }
-
-        .feature span {
-            color: #fff;
-            font-weight: 600;
-        }
-
-        /* Links */
-        .links {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .link-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 22px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.25s ease;
-        }
-
-        .link-btn.primary {
-            background: #fff;
-            color: #000;
-        }
-
-        .link-btn.primary:hover {
-            background: rgba(255,255,255,0.85);
-            transform: translateY(-1px);
-        }
-
-        .link-btn.secondary {
-            background: transparent;
-            color: rgba(255,255,255,0.6);
-            border: 1px solid rgba(255,255,255,0.12);
-        }
-
-        .link-btn.secondary:hover {
-            border-color: rgba(255,255,255,0.25);
-            color: #fff;
-        }
-
-        .footer {
-            margin-top: 60px;
-            font-size: 13px;
-            color: rgba(255,255,255,0.25);
-        }
-
-        @media (max-width: 560px) {
-            h1 { font-size: 32px; }
-            .features { grid-template-columns: 1fr; }
-            .code-text { font-size: 11px; }
-            .container { padding: 60px 16px 40px; }
-        }
-    </style>
+/* Mobile */
+@media(max-width:540px){
+  h1{font-size:30px}
+  .grid{grid-template-columns:1fr}
+  .code{font-size:11px}
+  .wrap{padding:52px 16px 40px}
+}
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="badge">v1.4 &mdash; Open Source</div>
+<div class="wrap center">
 
-        <h1>Oridium Interface</h1>
-        <p class="subtitle">Advanced Da Hood Script by @cuakieffer</p>
+  <div class="badge">v1.4 &mdash; Open Source</div>
 
-        <!-- Copy Box -->
-        <div class="copy-box">
-            <div class="copy-box-label">Copy Oridium Script</div>
-            <div class="code-row">
-                <div class="code-text" id="scriptCode">loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interface/main/Oridium.lua"))()</div>
-                <button class="copy-btn" id="copyBtn" onclick="copyScript()">
-                    <svg id="copyIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    <svg id="checkIcon" style="display:none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span id="copyText">Copy</span>
-                </button>
-            </div>
-        </div>
+  <h1>Oridium Interface</h1>
+  <p class="sub">Advanced Da Hood Script by @cuakieffer</p>
 
-        <!-- Features -->
-        <div class="features">
-            <div class="feature"><span>Aimbot</span> &mdash; Smooth lock</div>
-            <div class="feature"><span>Silent Aim</span> &mdash; Bullet redirect</div>
-            <div class="feature"><span>Triggerbot</span> &mdash; Auto fire</div>
-            <div class="feature"><span>ESP</span> &mdash; Boxes + Health</div>
-            <div class="feature"><span>High Jump</span> &mdash; Adjustable</div>
-            <div class="feature"><span>API System</span> &mdash; Programmable</div>
-            <div class="feature"><span>Good/Bad Boys</span> &mdash; Mark players</div>
-            <div class="feature"><span>Customization</span> &mdash; Yabujin fit</div>
-        </div>
-
-        <!-- Links -->
-        <div class="links">
-            <a href="https://github.com/ideBob/Oridium-Interface" target="_blank" class="link-btn primary">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                GitHub Repo
-            </a>
-            <a href="https://github.com/ideBob/Oridium-Interface/tree/main/tutorials" target="_blank" class="link-btn secondary">
-                Tutorials
-            </a>
-            <a href="https://github.com/ideBob/Oridium-Interface/tree/main/api" target="_blank" class="link-btn secondary">
-                API Docs
-            </a>
-        </div>
-
-        <div class="footer">
-            Made by @cuakieffer &mdash; Use at your own risk
-        </div>
+  <!-- Copy Script -->
+  <div class="card">
+    <div class="card-label">Copy Oridium Script</div>
+    <div class="row">
+      <div class="code" id="code">loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interface/main/Oridium.lua"))()</div>
+      <button class="btn-copy" id="btn" onclick="copy()">Copy</button>
     </div>
+  </div>
 
-    <script>
-        // Snowflake generator
-        function createSnowflake() {
-            const snowflake = document.createElement('div');
-            snowflake.classList.add('snowflake');
-            snowflake.textContent = ['❄', '❅', '❆'][Math.floor(Math.random() * 3)];
-            snowflake.style.left = Math.random() * 100 + 'vw';
-            snowflake.style.fontSize = (Math.random() * 10 + 8) + 'px';
-            snowflake.style.animationDuration = (Math.random() * 8 + 6) + 's';
-            snowflake.style.opacity = Math.random() * 0.4 + 0.1;
-            document.body.appendChild(snowflake);
+  <!-- Features -->
+  <div class="grid">
+    <div class="item"><b>Aimbot</b> — Smooth lock</div>
+    <div class="item"><b>Silent Aim</b> — Bullet redirect</div>
+    <div class="item"><b>Triggerbot</b> — Auto fire</div>
+    <div class="item"><b>ESP</b> — Boxes + Health</div>
+    <div class="item"><b>High Jump</b> — Adjustable</div>
+    <div class="item"><b>API System</b> — Programmable</div>
+    <div class="item"><b>Good/Bad Boys</b> — Mark players</div>
+    <div class="item"><b>Customization</b> — Yabujin fit</div>
+  </div>
 
-            setTimeout(() => snowflake.remove(), 14000);
-        }
+  <!-- Links -->
+  <div class="links">
+    <a class="btn btn-w" href="https://github.com/ideBob/Oridium-Interface" target="_blank" rel="noopener">GitHub Repo</a>
+    <a class="btn btn-g" href="https://github.com/ideBob/Oridium-Interface/tree/main/tutorials" target="_blank" rel="noopener">Tutorials</a>
+    <a class="btn btn-g" href="https://github.com/ideBob/Oridium-Interface/tree/main/api" target="_blank" rel="noopener">API Docs</a>
+  </div>
 
-        setInterval(createSnowflake, 200);
+  <div class="foot">Made by @cuakieffer — Use at your own risk</div>
 
-        // Initial burst
-        for (let i = 0; i < 20; i++) {
-            setTimeout(createSnowflake, i * 100);
-        }
+</div>
 
-        // Copy function
-        function copyScript() {
-            const code = document.getElementById('scriptCode').textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                const btn = document.getElementById('copyBtn');
-                const copyIcon = document.getElementById('copyIcon');
-                const checkIcon = document.getElementById('checkIcon');
-                const copyText = document.getElementById('copyText');
+<script>
+/* Snowflakes */
+function flake(){
+  const e=document.createElement('div');
+  e.className='snowflake';
+  e.textContent=['❄','❅','❆'][Math.floor(Math.random()*3)];
+  e.style.left=Math.random()*100+'vw';
+  e.style.fontSize=(Math.random()*9+7)+'px';
+  e.style.animationDuration=(Math.random()*7+6)+'s';
+  e.style.opacity=Math.random()*.35+.1;
+  document.body.appendChild(e);
+  setTimeout(()=>e.remove(),13000);
+}
+setInterval(flake,220);
+for(let i=0;i<18;i++)setTimeout(flake,i*90);
 
-                btn.classList.add('copied');
-                copyIcon.style.display = 'none';
-                checkIcon.style.display = 'block';
-                copyText.textContent = 'Copied!';
+/* Copy */
+function copy(){
+  const text=document.getElementById('code').innerText;
+  const btn=document.getElementById('btn');
 
-                setTimeout(() => {
-                    btn.classList.remove('copied');
-                    copyIcon.style.display = 'block';
-                    checkIcon.style.display = 'none';
-                    copyText.textContent = 'Copy';
-                }, 2000);
-            });
-        }
-    </script>
+  function ok(){
+    btn.classList.add('ok');
+    btn.textContent='Copied!';
+    setTimeout(()=>{btn.classList.remove('ok');btn.textContent='Copy'},1800);
+  }
+
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(text).then(ok).catch(fb);
+  }else{fb()}
+
+  function fb(){
+    const t=document.createElement('textarea');
+    t.value=text;
+    t.style.cssText='position:fixed;left:-9999px';
+    document.body.appendChild(t);
+    t.select();
+    try{document.execCommand('copy');ok()}catch(e){btn.textContent='Failed'}
+    document.body.removeChild(t);
+  }
+}
+</script>
 </body>
 </html>
