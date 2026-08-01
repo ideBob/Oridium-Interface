@@ -4,13 +4,10 @@
 
 **Advanced Da Hood Script**
 
-PC + Mobile Support
-
 <br>
 
 ![Luau](https://img.shields.io/badge/Luau-000000?style=for-the-badge&logo=roblox&logoColor=white)
-![PC](https://img.shields.io/badge/PC-Linoria-8b5cf6?style=for-the-badge)
-![Mobile](https://img.shields.io/badge/Mobile-Kavo-0ea5e9?style=for-the-badge)
+![UI](https://img.shields.io/badge/UI-Linoria-8b5cf6?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Active-22c55e?style=for-the-badge)
 ![Version](https://img.shields.io/badge/v1.2-3b82f6?style=for-the-badge)
 
@@ -19,22 +16,15 @@ PC + Mobile Support
 ![Stars](https://img.shields.io/github/stars/ideBob/Oridium-Interface?style=flat-square&color=eab308)
 ![Forks](https://img.shields.io/github/forks/ideBob/Oridium-Interface?style=flat-square&color=8b5cf6)
 ![Last Commit](https://img.shields.io/github/last-commit/ideBob/Oridium-Interface?style=flat-square&color=06b6d4)
-![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 </div>
 
 ---
 
-### 📥 Loadstrings
+### 📥 Loadstring
 
-**PC Version**
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interface/main/Oridium.lua"))()
-```
-
-**Mobile Version**
-```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interface/main/Mobile/Oridium-Mobile.lua"))()
 ```
 
 ---
@@ -60,10 +50,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interf
 
 ```text
 Oridium-Interface/
-├── Oridium.lua              → PC Version (Linoria)
-├── Mobile/
-│   ├── Oridium-Mobile.lua   → Mobile Version (Kavo)
-│   └── README.md
+├── Oridium.lua
 ├── docs/
 │   ├── API.md
 │   ├── Features.md
@@ -84,11 +71,10 @@ Oridium-Interface/
 | Keybinds | [docs/Keybinds.md](docs/Keybinds.md) |
 | API Reference | [docs/API.md](docs/API.md) |
 | FAQ | [docs/FAQ.md](docs/FAQ.md) |
-| Mobile Guide | [Mobile/README.md](Mobile/README.md) |
 
 ---
 
-### ⌨️ Default Keybinds (PC)
+### ⌨️ Default Keybinds
 
 | Action | Key |
 |--------|-----|
@@ -101,8 +87,7 @@ Oridium-Interface/
 ### 👤 Credits
 
 - **Script** — [@cuakieffer](https://github.com/ideBob)
-- **PC UI** — [LinoriaLib](https://github.com/violin-suzutsuki/LinoriaLib)
-- **Mobile UI** — [Kavo UI](https://github.com/xHeptc/Kavo-UI-Library)
+- **UI Library** — [LinoriaLib](https://github.com/violin-suzutsuki/LinoriaLib)
 
 ---
 
