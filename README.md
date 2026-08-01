@@ -20,7 +20,7 @@
 
 <br>
 
-🌐 **[oridium-interface.netlify.app](https://oridium-interface.netlify.app)**
+🌐 **Website:** [https://oridium-interface.netlify.app](https://oridium-interface.netlify.app)
 
 </div>
 
@@ -64,9 +64,9 @@ local OridiumAPI = loadstring(game:HttpGet("https://raw.githubusercontent.com/id
 Oridium-Interface/
 ├── Oridium.lua
 ├── api/
+│   ├── OridiumAPI.lua
+│   └── README.md
 ├── tutorials/
-├── website/
-│   └── index.html
 ├── docs/
 └── assets/
 ```
@@ -81,7 +81,6 @@ Oridium-Interface/
 | Installation | [docs/Installation.md](docs/Installation.md) |
 | Features | [docs/Features.md](docs/Features.md) |
 | Keybinds | [docs/Keybinds.md](docs/Keybinds.md) |
-| API Reference | [docs/API.md](docs/API.md) |
 | API System | [api/README.md](api/README.md) |
 | Tutorials | [tutorials/README.md](tutorials/README.md) |
 | FAQ | [docs/FAQ.md](docs/FAQ.md) |
