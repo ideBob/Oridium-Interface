@@ -2,46 +2,48 @@
 
 ## Requirements
 
-- A working Roblox executor (Synapse, Wave, Solara, etc.)
-- Da Hood (or any game that supports the features)
+- A working Roblox executor
+- Da Hood (or compatible games)
 
 ---
 
-## Method 1: Loadstring (Recommended)
+## PC Version (Recommended)
 
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interface/main/Oridium.lua"))()
 ```
 
-Just paste this into your executor and run it.
+Uses **Linoria UI** — best for PC.
 
 ---
 
-## Method 2: Manual
+## Mobile Version
 
-1. Go to the [Oridium.lua](https://github.com/ideBob/Oridium-Interface/blob/main/Oridium.lua) file
-2. Click the **Raw** button
-3. Copy everything
-4. Paste into your executor and execute
+```lua
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interface/main/Mobile/Oridium-Mobile.lua"))()
+```
+
+Uses **Kavo UI** — bigger buttons, better for mobile.
 
 ---
 
 ## After Loading
 
-- The UI will appear after the intro animation
-- Press **End** to toggle the menu
-- Your settings are automatically saved
+- PC: Press **End** to toggle the menu
+- Mobile: UI should appear automatically
+- Settings are saved automatically (PC version)
 
 ---
 
 ## Troubleshooting
 
 | Problem | Solution |
-|--------|----------|
-| Script doesn't load | Make sure your executor supports `Drawing` and `getrawmetatable` |
-| UI not showing | Press the **End** key |
-| Config not saving | Check if the executor allows writing files |
-| Silent Aim not working | Some games require different hooks. Try toggling it on/off |
+|---------|----------|
+| Script doesn't load | Make sure your executor supports Drawing + getrawmetatable |
+| UI too small (Mobile) | Use the Mobile version instead of PC version |
+| UI not showing (PC) | Press the **End** key |
+| Silent Aim not working | Toggle it off and on again |
+| Config not saving | Some executors block file writing |
 
 ---
 
