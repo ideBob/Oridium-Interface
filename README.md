@@ -8,8 +8,9 @@
 
 ![Luau](https://img.shields.io/badge/Luau-000000?style=for-the-badge&logo=roblox&logoColor=white)
 ![UI](https://img.shields.io/badge/UI-Linoria-8b5cf6?style=for-the-badge)
+![API](https://img.shields.io/badge/API-System-f59e0b?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Active-22c55e?style=for-the-badge)
-![Version](https://img.shields.io/badge/v1.2-3b82f6?style=for-the-badge)
+![Version](https://img.shields.io/badge/v1.3-3b82f6?style=for-the-badge)
 
 <br>
 
@@ -25,6 +26,12 @@
 
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interface/main/Oridium.lua"))()
+```
+
+### 🔌 API System
+
+```lua
+local OridiumAPI = loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interface/main/api/OridiumAPI.lua"))()
 ```
 
 ---
@@ -43,6 +50,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interf
 | 👕 | **Customization** | Yabujin fit + accessories |
 | ✅ | **Good/Bad Boys** | Mark players with crosses |
 | 🌈 | **RGB Mode** | Rainbow UI accent |
+| 🔌 | **API System** | Full programmable API |
 
 ---
 
@@ -50,7 +58,10 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/ideBob/Oridium-Interf
 
 ```text
 Oridium-Interface/
-├── Oridium.lua
+├── Oridium.lua              → Main Script
+├── api/
+│   ├── OridiumAPI.lua       → API System
+│   └── README.md            → API Docs
 ├── docs/
 │   ├── API.md
 │   ├── Features.md
@@ -70,6 +81,7 @@ Oridium-Interface/
 | Features | [docs/Features.md](docs/Features.md) |
 | Keybinds | [docs/Keybinds.md](docs/Keybinds.md) |
 | API Reference | [docs/API.md](docs/API.md) |
+| API System | [api/README.md](api/README.md) |
 | FAQ | [docs/FAQ.md](docs/FAQ.md) |
 
 ---
