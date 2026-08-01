@@ -10,7 +10,7 @@
 ![UI](https://img.shields.io/badge/UI-Linoria-8b5cf6?style=for-the-badge)
 ![API](https://img.shields.io/badge/API-System-f59e0b?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Active-22c55e?style=for-the-badge)
-![Version](https://img.shields.io/badge/v1.3-3b82f6?style=for-the-badge)
+![Version](https://img.shields.io/badge/v1.4-3b82f6?style=for-the-badge)
 
 <br>
 
@@ -58,16 +58,18 @@ local OridiumAPI = loadstring(game:HttpGet("https://raw.githubusercontent.com/id
 
 ```text
 Oridium-Interface/
-├── Oridium.lua              → Main Script
+├── Oridium.lua
 ├── api/
-│   ├── OridiumAPI.lua       → API System
-│   └── README.md            → API Docs
+│   ├── OridiumAPI.lua
+│   └── README.md
+├── tutorials/
+│   ├── 01-Getting-Started.md
+│   ├── 02-Aimbot-And-SilentAim.md
+│   ├── 03-GoodBad-Boys.md
+│   ├── 04-HighJump-And-Utils.md
+│   ├── 05-Full-Example.md
+│   └── README.md
 ├── docs/
-│   ├── API.md
-│   ├── Features.md
-│   ├── Installation.md
-│   ├── Keybinds.md
-│   └── FAQ.md
 └── assets/
 ```
 
@@ -82,6 +84,7 @@ Oridium-Interface/
 | Keybinds | [docs/Keybinds.md](docs/Keybinds.md) |
 | API Reference | [docs/API.md](docs/API.md) |
 | API System | [api/README.md](api/README.md) |
+| **Tutorials** | [tutorials/README.md](tutorials/README.md) |
 | FAQ | [docs/FAQ.md](docs/FAQ.md) |
 
 ---
