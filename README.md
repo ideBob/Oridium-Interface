@@ -18,6 +18,10 @@
 ![Forks](https://img.shields.io/github/forks/ideBob/Oridium-Interface?style=flat-square&color=8b5cf6)
 ![Last Commit](https://img.shields.io/github/last-commit/ideBob/Oridium-Interface?style=flat-square&color=06b6d4)
 
+<br>
+
+🌐 **[oridium-interface.netlify.app](https://oridium-interface.netlify.app)**
+
 </div>
 
 ---
@@ -60,15 +64,9 @@ local OridiumAPI = loadstring(game:HttpGet("https://raw.githubusercontent.com/id
 Oridium-Interface/
 ├── Oridium.lua
 ├── api/
-│   ├── OridiumAPI.lua
-│   └── README.md
 ├── tutorials/
-│   ├── 01-Getting-Started.md
-│   ├── 02-Aimbot-And-SilentAim.md
-│   ├── 03-GoodBad-Boys.md
-│   ├── 04-HighJump-And-Utils.md
-│   ├── 05-Full-Example.md
-│   └── README.md
+├── website/
+│   └── index.html
 ├── docs/
 └── assets/
 ```
@@ -79,12 +77,13 @@ Oridium-Interface/
 
 | Document | Link |
 |----------|------|
+| 🌐 Website | [oridium-interface.netlify.app](https://oridium-interface.netlify.app) |
 | Installation | [docs/Installation.md](docs/Installation.md) |
 | Features | [docs/Features.md](docs/Features.md) |
 | Keybinds | [docs/Keybinds.md](docs/Keybinds.md) |
 | API Reference | [docs/API.md](docs/API.md) |
 | API System | [api/README.md](api/README.md) |
-| **Tutorials** | [tutorials/README.md](tutorials/README.md) |
+| Tutorials | [tutorials/README.md](tutorials/README.md) |
 | FAQ | [docs/FAQ.md](docs/FAQ.md) |
 
 ---
