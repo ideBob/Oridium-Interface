@@ -163,7 +163,35 @@ local function isValidTarget(player)
         and player.Character.Humanoid.Health > 0
 end
 
--- ==================== SILENT AIM ====================
+-- ==================== DA HOOD CHECK ====================
+-- Only enable silent aim logic on real Da Hood places
+local DA_HOOD_PLACE_IDS = {
+    [2788229376] = true,  -- Da Hood
+    [7213786345] = true,  -- Da Hood related
+    [9825515356] = true,  -- Da Hood variants
+    [1008451066] = true,
+    [5602055394] = true,
+    [9183933413] = true,
+}
+
+local function isDaHood()
+    if DA_HOOD_PLACE_IDS[game.PlaceId] then
+        return true
+    end
+    local name = string.lower(tostring(game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or ""))
+    if string.find(name, "da hood") or string.find(name, "dahood") then
+        return true
+    end
+    -- Fallback: MainEvent exists (classic Da Hood gun system)
+    local ok = pcall(function()
+        return game:GetService("ReplicatedStorage"):FindFirstChild("MainEvent") ~= nil
+    end)
+    return ok and game:GetService("ReplicatedStorage"):FindFirstChild("MainEvent") ~= nil
+end
+
+local ON_DA_HOOD = isDaHood()
+
+-- ==================== SILENT AIM (DA HOOD ONLY) ====================
 local function getClosestSilentTarget()
     local closest, shortest = nil, math.huge
     local mousePos = UserInputService:GetMouseLocation()
@@ -174,7 +202,7 @@ local function getClosestSilentTarget()
             local sp, onScreen = Camera:WorldToViewportPoint(head.Position)
             if onScreen then
                 local dist = (Vector2.new(sp.X, sp.Y) - mousePos).Magnitude
-                if dist < 180 and dist < shortest then
+                if dist < 200 and dist < shortest then
                     shortest = dist
                     closest = head
                 end
@@ -184,41 +212,56 @@ local function getClosestSilentTarget()
     return closest
 end
 
-pcall(function()
-    local mt = getrawmetatable(game)
-    local old = mt.__namecall
-    setreadonly(mt, false)
+if ON_DA_HOOD then
+    pcall(function()
+        local mt = getrawmetatable(game)
+        local oldNamecall = mt.__namecall
+        setreadonly(mt, false)
 
-    mt.__namecall = newcclosure(function(self, ...)
-        local method = getnamecallmethod()
-        local args = {...}
+        mt.__namecall = newcclosure(function(self, ...)
+            local method = getnamecallmethod()
+            local args = {...}
 
-        if getgenv().Oridium.SilentAim and getgenv().Oridium.SilentTarget then
-            local target = getgenv().Oridium.SilentTarget
-            if method == "Raycast" and self == workspace then
-                local origin = args[1]
-                args[2] = (target.Position - origin).Unit * (args[2].Magnitude or 1000)
-                return old(self, unpack(args))
-            elseif method == "FindPartOnRay" or method == "FindPartOnRayWithIgnoreList" or method == "FindPartOnRayWithWhitelist" then
-                local ray = args[1]
-                if typeof(ray) == "Ray" then
-                    args[1] = Ray.new(ray.Origin, (target.Position - ray.Origin).Unit * 999)
-                    return old(self, unpack(args))
+            if getgenv().Oridium.SilentAim and getgenv().Oridium.SilentTarget then
+                local target = getgenv().Oridium.SilentTarget
+
+                -- Da Hood MainEvent Shoot
+                if method == "FireServer" and tostring(self.Name) == "MainEvent" then
+                    if args[1] == "Shoot" or args[1] == "ShootGun" or args[1] == "MousePos" then
+                        -- redirect mouse position style args when present
+                        for i = 2, #args do
+                            if typeof(args[i]) == "Vector3" then
+                                args[i] = target.Position
+                            end
+                        end
+                        return oldNamecall(self, unpack(args))
+                    end
+                end
+
+                -- Raycasts used by some DH gun scripts
+                if method == "Raycast" and self == workspace then
+                    local origin = args[1]
+                    if typeof(origin) == "Vector3" then
+                        args[2] = (target.Position - origin).Unit * ((typeof(args[2]) == "Vector3" and args[2].Magnitude) or 1000)
+                        return oldNamecall(self, unpack(args))
+                    end
                 end
             end
-        end
-        return old(self, ...)
-    end)
-    setreadonly(mt, true)
-end)
 
-RunService.Heartbeat:Connect(function()
-    if getgenv().Oridium.SilentAim then
-        getgenv().Oridium.SilentTarget = getClosestSilentTarget()
-    else
-        getgenv().Oridium.SilentTarget = nil
-    end
-end)
+            return oldNamecall(self, ...)
+        end)
+
+        setreadonly(mt, true)
+    end)
+
+    RunService.Heartbeat:Connect(function()
+        if getgenv().Oridium.SilentAim then
+            getgenv().Oridium.SilentTarget = getClosestSilentTarget()
+        else
+            getgenv().Oridium.SilentTarget = nil
+        end
+    end)
+end
 
 -- ==================== HIGH JUMP ====================
 local highJumpEnabled = false
@@ -307,16 +350,18 @@ FOVCircle.Radius = aimbotFOV / 2
 FOVCircle.Filled = false
 FOVCircle.Visible = false
 
+-- Snap line: not too skinny
 local SnapLine = Drawing.new("Line")
 SnapLine.Color = lightBlue
-SnapLine.Thickness = 2
+SnapLine.Thickness = 1.8
 SnapLine.Visible = false
 
+-- Head dot: skinny / small
 local HeadDot = Drawing.new("Circle")
 HeadDot.Color = lightBlue
-HeadDot.Thickness = 1.5
-HeadDot.NumSides = 24
-HeadDot.Radius = 3
+HeadDot.Thickness = 1
+HeadDot.NumSides = 16
+HeadDot.Radius = 1.6
 HeadDot.Filled = true
 HeadDot.Visible = false
 
@@ -380,9 +425,15 @@ CombatBox:AddToggle('Aimbot', {
 })
 
 CombatBox:AddToggle('SilentAim', {
-    Text = 'Silent Aim',
+    Text = 'Silent Aim (Da Hood Only)',
     Default = false,
+    Tooltip = ON_DA_HOOD and 'Works on this Da Hood place' or 'Not Da Hood — silent aim disabled',
     Callback = function(v)
+        if not ON_DA_HOOD then
+            getgenv().Oridium.SilentAim = false
+            Library:Notify('Silent Aim only works on Da Hood', 3)
+            return
+        end
         getgenv().Oridium.SilentAim = v
     end
 })
@@ -569,6 +620,63 @@ VisualsBox:AddLabel('ESP Color'):AddColorPicker('ESPColor', {
     end
 })
 
+-- ==================== ORIDIUM LINES (TRACERS) ====================
+local oridiumLinesEnabled = false
+local OridiumLines = {}
+
+local function createOridiumLine(player)
+    if OridiumLines[player] then return end
+    local line = Drawing.new("Line")
+    line.Color = lightBlue
+    line.Thickness = 1.4
+    line.Visible = false
+    OridiumLines[player] = line
+end
+
+local function removeOridiumLine(player)
+    if OridiumLines[player] then
+        pcall(function() OridiumLines[player]:Remove() end)
+        OridiumLines[player] = nil
+    end
+end
+
+local function updateOridiumLine(player)
+    local line = OridiumLines[player]
+    if not line then return end
+    if not isValidTarget(player) then
+        line.Visible = false
+        return
+    end
+
+    local head = player.Character.Head
+    local sp, onScreen = Camera:WorldToViewportPoint(head.Position)
+    if not onScreen then
+        line.Visible = false
+        return
+    end
+
+    -- From bottom center of screen to head
+    local from = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+    line.From = from
+    line.To = Vector2.new(sp.X, sp.Y)
+    line.Color = lightBlue
+    line.Visible = true
+end
+
+VisualsBox:AddToggle('OridiumLines', {
+    Text = 'Oridium Lines',
+    Default = false,
+    Tooltip = 'Tracers from bottom of screen to players',
+    Callback = function(v)
+        oridiumLinesEnabled = v
+        if not v then
+            for _, line in pairs(OridiumLines) do
+                line.Visible = false
+            end
+        end
+    end
+})
+
 -- ==================== AIMVIEWER ====================
 local aimviewerEnabled = false
 local AimviewerCache = {}
@@ -619,11 +727,13 @@ local function onPlayerAdded(player)
     if player == LocalPlayer then return end
     createESP(player)
     createAimviewer(player)
+    createOridiumLine(player)
 end
 
 local function onPlayerRemoving(player)
     removeESP(player)
     removeAimviewer(player)
+    removeOridiumLine(player)
 end
 
 for _, p in ipairs(Players:GetPlayers()) do onPlayerAdded(p) end
@@ -673,6 +783,12 @@ RunService.RenderStepped:Connect(function()
     if aimviewerEnabled then
         for player in pairs(AimviewerCache) do
             pcall(updateAimviewer, player)
+        end
+    end
+
+    if oridiumLinesEnabled then
+        for player in pairs(OridiumLines) do
+            pcall(updateOridiumLine, player)
         end
     end
 end)
@@ -739,6 +855,7 @@ Library:OnUnload(function()
             for _, obj in pairs(data) do obj:Remove() end
         end
         for _, line in pairs(AimviewerCache) do line:Remove() end
+        for _, line in pairs(OridiumLines) do line:Remove() end
     end)
 end)
 
