@@ -129,30 +129,23 @@ local Window = Library:CreateWindow({
 })
 
 local Tabs = {
-    Blatant              = Window:AddTab('Blatant'),
-    Visuals              = Window:AddTab('Visuals'),
-    Player               = Window:AddTab('Player'),
-    ['Customization']    = Window:AddTab('Player Customization'),
-    ['Good/Bad']         = Window:AddTab('Good/Bad Boys'),
-    ['UI Settings']      = Window:AddTab('UI Settings'),
+    Blatant         = Window:AddTab('Blatant'),
+    Visuals         = Window:AddTab('Visuals'),
+    Player          = Window:AddTab('Player'),
+    ['UI Settings'] = Window:AddTab('UI Settings'),
 }
 
-local CombatBox     = Tabs.Blatant:AddLeftGroupbox('Combat')
-local TriggerBox    = Tabs.Blatant:AddRightGroupbox('Triggerbot')
-local VisualsBox    = Tabs.Visuals:AddLeftGroupbox('ESP')
-local AimviewerBox  = Tabs.Visuals:AddRightGroupbox('Aimviewer')
-local MovementBox   = Tabs.Player:AddLeftGroupbox('Movement')
-local AntiBox       = Tabs.Player:AddRightGroupbox('Anti Detection')
-local CustomBox     = Tabs['Customization']:AddLeftGroupbox('Accessories')
-local CustomInfoBox = Tabs['Customization']:AddRightGroupbox('Info')
-local BoysBox       = Tabs['Good/Bad']:AddLeftGroupbox('Oridium Boys')
-local ActionsBox    = Tabs['Good/Bad']:AddRightGroupbox('Actions')
+local CombatBox    = Tabs.Blatant:AddLeftGroupbox('Combat')
+local TriggerBox   = Tabs.Blatant:AddRightGroupbox('Triggerbot')
+local VisualsBox   = Tabs.Visuals:AddLeftGroupbox('ESP')
+local AimviewerBox = Tabs.Visuals:AddRightGroupbox('Aimviewer')
+local MovementBox  = Tabs.Player:AddLeftGroupbox('Movement')
+local AntiBox      = Tabs.Player:AddRightGroupbox('Anti Detection')
 
 -- ==================== SERVICES & SHARED ====================
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local InsertService = game:GetService("InsertService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -161,13 +154,7 @@ getgenv().Oridium = getgenv().Oridium or {
     SilentAim = false,
     SilentTarget = nil,
     AntiDetection = false,
-    GoodBoys = {},
-    BadBoys = {}
 }
-
-local GoodBoys = getgenv().Oridium.GoodBoys
-local BadBoys = getgenv().Oridium.BadBoys
-local Marks = {}
 
 local function isValidTarget(player)
     return player and player.Character
@@ -175,299 +162,6 @@ local function isValidTarget(player)
         and player.Character:FindFirstChild("Humanoid")
         and player.Character.Humanoid.Health > 0
 end
-
--- ==================== PLAYER CUSTOMIZATION ====================
-local CustomAssets = {
-    {Name = "Yabujin Shirt",       Id = 1350415618,      Type = "Shirt"},
-    {Name = "Tragedy",             Id = 13702160,         Type = "Face"},
-    {Name = "Hair",                Id = 105694273623487,  Type = "Accessory"},
-    {Name = "Black Eye Patch",     Id = 4528880486,       Type = "Accessory"},
-    {Name = "Black Horns",         Id = 140127383196216,  Type = "Accessory"},
-    {Name = "Glowing Beast Eyes",  Id = 1594010,          Type = "Face"},
-}
-
-local function isR15()
-    local char = LocalPlayer.Character
-    if not char then return false end
-    local humanoid = char:FindFirstChildOfClass("Humanoid")
-    return humanoid and humanoid.RigType == Enum.HumanoidRigType.R15
-end
-
-local function applyAsset(assetData)
-    local char = LocalPlayer.Character
-    if not char then return end
-    local humanoid = char:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
-
-    local id = assetData.Id
-    local assetType = assetData.Type
-
-    if assetType == "Shirt" then
-        local old = char:FindFirstChildOfClass("Shirt")
-        if old then old:Destroy() end
-        local shirt = Instance.new("Shirt")
-        shirt.ShirtTemplate = "rbxassetid://" .. id
-        shirt.Parent = char
-    elseif assetType == "Face" then
-        local head = char:FindFirstChild("Head")
-        if head then
-            local face = head:FindFirstChild("face") or head:FindFirstChildOfClass("Decal")
-            if face then
-                face.Texture = "rbxassetid://" .. id
-            end
-        end
-    else
-        local success, model = pcall(function()
-            return InsertService:LoadAsset(id)
-        end)
-        if success and model then
-            local accessory = model:FindFirstChildOfClass("Accessory")
-            if not accessory then
-                for _, child in ipairs(model:GetChildren()) do
-                    if child:IsA("Accessory") or child:IsA("Hat") or child:IsA("Accoutrement") then
-                        accessory = child
-                        break
-                    end
-                end
-            end
-            if accessory then
-                humanoid:AddAccessory(accessory:Clone())
-            end
-            model:Destroy()
-        end
-    end
-end
-
-local function loadAllCustom()
-    if not isR15() then
-        Library:Notify("Only works on R15 characters!", 3)
-        return
-    end
-
-    Library:Notify("Loading all accessories...", 2)
-
-    for _, asset in ipairs(CustomAssets) do
-        pcall(applyAsset, asset)
-        task.wait(0.15)
-    end
-
-    Library:Notify("All loaded! Resetting in 15 seconds...", 3)
-
-    task.wait(15)
-
-    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        humanoid.Health = 0
-    end
-end
-
-for _, asset in ipairs(CustomAssets) do
-    CustomBox:AddLabel(asset.Name .. "  |  " .. tostring(asset.Id))
-end
-
-CustomBox:AddDivider()
-
-CustomBox:AddButton({
-    Text = 'Load All',
-    Func = function()
-        task.spawn(loadAllCustom)
-    end
-})
-
-CustomInfoBox:AddLabel('Only works on R15')
-CustomInfoBox:AddLabel('Loads all items then waits 15s')
-CustomInfoBox:AddLabel('and resets your character')
-CustomInfoBox:AddDivider()
-CustomInfoBox:AddLabel('Items included:')
-CustomInfoBox:AddLabel('- Yabujin Shirt')
-CustomInfoBox:AddLabel('- Tragedy')
-CustomInfoBox:AddLabel('- Hair')
-CustomInfoBox:AddLabel('- Black Eye Patch')
-CustomInfoBox:AddLabel('- Black Horns')
-CustomInfoBox:AddLabel('- Glowing Beast Eyes')
-
--- ==================== GOOD / BAD BOYS MARKS ====================
-local function createMark(player, isGood)
-    if Marks[player] then
-        pcall(function() Marks[player]:Remove() end)
-        Marks[player] = nil
-    end
-
-    local mark = Drawing.new("Text")
-    mark.Center = true
-    mark.Outline = true
-    mark.OutlineColor = Color3.fromRGB(0, 0, 0)
-    mark.Visible = false
-
-    if isGood then
-        mark.Text = "✝"
-        mark.Size = 28
-        mark.Color = Color3.fromRGB(80, 255, 120)
-    else
-        mark.Text = "†"
-        mark.Size = 32
-        mark.Color = Color3.fromRGB(255, 50, 50)
-    end
-
-    Marks[player] = mark
-end
-
-local function removeMark(player)
-    if Marks[player] then
-        pcall(function() Marks[player]:Remove() end)
-        Marks[player] = nil
-    end
-end
-
-local function updateMarks()
-    for player, mark in pairs(Marks) do
-        if isValidTarget(player) then
-            local headPos = player.Character.Head.Position + Vector3.new(0, 3.3, 0)
-            local screenPos, onScreen = Camera:WorldToViewportPoint(headPos)
-            if onScreen then
-                mark.Position = Vector2.new(screenPos.X, screenPos.Y)
-                mark.Visible = true
-            else
-                mark.Visible = false
-            end
-        else
-            mark.Visible = false
-        end
-    end
-end
-
--- ==================== GOOD / BAD BOYS UI ====================
-local SelectedPlayer = nil
-
-local function getPlayerList()
-    local list = {}
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer then
-            table.insert(list, p.Name)
-        end
-    end
-    table.sort(list)
-    return list
-end
-
-local function refreshPlayerDropdown()
-    local list = getPlayerList()
-    if Options.PlayerList then
-        Options.PlayerList:SetValues(list)
-        if #list > 0 then
-            Options.PlayerList:SetValue(list[1])
-        end
-    end
-end
-
-BoysBox:AddDropdown('PlayerList', {
-    Values = getPlayerList(),
-    Default = 1,
-    Multi = false,
-    Text = 'Oridium Boys',
-    Callback = function(Value)
-        SelectedPlayer = Players:FindFirstChild(Value)
-    end
-})
-
-BoysBox:AddButton({
-    Text = 'Refresh List',
-    Func = function()
-        refreshPlayerDropdown()
-        Library:Notify('Player list refreshed', 2)
-    end
-})
-
-local StatusLabel = BoysBox:AddLabel('No player selected')
-
-Options.PlayerList:OnChanged(function()
-    local name = Options.PlayerList.Value
-    SelectedPlayer = Players:FindFirstChild(name)
-
-    if SelectedPlayer then
-        local status = "Neutral"
-        if GoodBoys[SelectedPlayer.UserId] then
-            status = "✅ Good Boy"
-        elseif BadBoys[SelectedPlayer.UserId] then
-            status = "❌ Bad Boy"
-        end
-        StatusLabel:SetText(SelectedPlayer.Name .. " | " .. status .. "\nID: " .. SelectedPlayer.UserId)
-    else
-        StatusLabel:SetText('No player selected')
-    end
-end)
-
-ActionsBox:AddButton({
-    Text = 'Sign Good Boys',
-    Func = function()
-        if SelectedPlayer then
-            GoodBoys[SelectedPlayer.UserId] = SelectedPlayer.Name
-            BadBoys[SelectedPlayer.UserId] = nil
-            createMark(SelectedPlayer, true)
-            Library:Notify(SelectedPlayer.Name .. " → Good Boy ✝", 3)
-            Options.PlayerList:SetValue(SelectedPlayer.Name)
-        else
-            Library:Notify("Select a player first", 2)
-        end
-    end
-})
-
-ActionsBox:AddButton({
-    Text = 'Sign Bad Boys',
-    Func = function()
-        if SelectedPlayer then
-            BadBoys[SelectedPlayer.UserId] = SelectedPlayer.Name
-            GoodBoys[SelectedPlayer.UserId] = nil
-            createMark(SelectedPlayer, false)
-            Library:Notify(SelectedPlayer.Name .. " → Bad Boy †", 3)
-            Options.PlayerList:SetValue(SelectedPlayer.Name)
-        else
-            Library:Notify("Select a player first", 2)
-        end
-    end
-})
-
-ActionsBox:AddDivider()
-
-ActionsBox:AddButton({
-    Text = 'Clear Good Boys',
-    Func = function()
-        for uid, name in pairs(GoodBoys) do
-            local p = Players:FindFirstChild(name)
-            if p then removeMark(p) end
-        end
-        table.clear(GoodBoys)
-        Library:Notify("Good Boys cleared", 2)
-    end
-})
-
-ActionsBox:AddButton({
-    Text = 'Clear Bad Boys',
-    Func = function()
-        for uid, name in pairs(BadBoys) do
-            local p = Players:FindFirstChild(name)
-            if p then removeMark(p) end
-        end
-        table.clear(BadBoys)
-        Library:Notify("Bad Boys cleared", 2)
-    end
-})
-
-Players.PlayerAdded:Connect(function(player)
-    task.wait(1)
-    refreshPlayerDropdown()
-    if GoodBoys[player.UserId] then
-        createMark(player, true)
-    elseif BadBoys[player.UserId] then
-        createMark(player, false)
-    end
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-    removeMark(player)
-    task.wait(0.3)
-    refreshPlayerDropdown()
-end)
 
 -- ==================== SILENT AIM ====================
 local function getClosestSilentTarget()
@@ -930,7 +624,6 @@ end
 local function onPlayerRemoving(player)
     removeESP(player)
     removeAimviewer(player)
-    removeMark(player)
 end
 
 for _, p in ipairs(Players:GetPlayers()) do onPlayerAdded(p) end
@@ -942,7 +635,6 @@ RunService.RenderStepped:Connect(function()
     local now = tick()
 
     updateFOVCircle()
-    updateMarks()
 
     if triggerbotEnabled then
         TriggerFOVCircle.Position = UserInputService:GetMouseLocation()
@@ -1047,7 +739,6 @@ Library:OnUnload(function()
             for _, obj in pairs(data) do obj:Remove() end
         end
         for _, line in pairs(AimviewerCache) do line:Remove() end
-        for _, mark in pairs(Marks) do mark:Remove() end
     end)
 end)
 
