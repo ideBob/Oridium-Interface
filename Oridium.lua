@@ -8,244 +8,261 @@ local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
 local ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua'))()
 local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
 
--- ==================== INTRO ANIMATION ====================
--- Lightning bolt -> screen flash -> electric particles -> label -> slice
+-- ==================== CUSTOM ORIDIUM INTRO ====================
 do
     local Camera = workspace.CurrentCamera
     local sw, sh = Camera.ViewportSize.X, Camera.ViewportSize.Y
     local cx, cy = sw / 2, sh / 2
 
-    local boltColor = Color3.fromRGB(255, 210, 40)
-    local boltGlow = Color3.fromRGB(255, 240, 120)
+    local COL_CORE = Color3.fromRGB(90, 170, 255)
+    local COL_GLOW = Color3.fromRGB(170, 220, 255)
+    local COL_WHITE = Color3.fromRGB(255, 255, 255)
+    local COL_DIM = Color3.fromRGB(60, 110, 180)
 
-    -- Lightning bolt shape (reference-style zig-zag)
-    -- Points relative to center, scaled
-    local scale = math.min(sw, sh) * 0.22
-    local boltLocal = {
-        Vector2.new(0.15, -1.00),
-        Vector2.new(-0.25, -0.15),
-        Vector2.new(0.05, -0.15),
-        Vector2.new(-0.35, 1.00),
-        Vector2.new(0.20, 0.05),
-        Vector2.new(-0.05, 0.05),
-        Vector2.new(0.30, -0.55),
-    }
-    -- Reordered into a proper bolt polyline (top to bottom)
-    boltLocal = {
-        Vector2.new(0.10, -1.00),
-        Vector2.new(-0.35, -0.05),
-        Vector2.new(0.05, -0.05),
-        Vector2.new(-0.20, 0.35),
-        Vector2.new(0.25, 0.35),
-        Vector2.new(-0.15, 1.00),
-    }
+    -- Center core
+    local core = Drawing.new("Circle")
+    core.Position = Vector2.new(cx, cy)
+    core.Radius = 2
+    core.Filled = true
+    core.NumSides = 32
+    core.Color = COL_GLOW
+    core.Visible = true
+    core.Transparency = 1
 
-    local boltPoints = {}
-    for _, p in ipairs(boltLocal) do
-        table.insert(boltPoints, Vector2.new(cx + p.X * scale, cy + p.Y * scale))
+    -- Expanding rings
+    local rings = {}
+    for i = 1, 3 do
+        local r = Drawing.new("Circle")
+        r.Position = Vector2.new(cx, cy)
+        r.Radius = 4
+        r.Filled = false
+        r.NumSides = 64
+        r.Thickness = 1.5
+        r.Color = COL_CORE
+        r.Visible = true
+        r.Transparency = 1
+        table.insert(rings, r)
     end
 
-    local boltLines = {}
-    for i = 1, #boltPoints - 1 do
-        local ln = Drawing.new("Line")
-        ln.From = boltPoints[i]
-        ln.To = boltPoints[i]
-        ln.Color = boltColor
-        ln.Thickness = 5
-        ln.Visible = true
-        ln.Transparency = 1
-        table.insert(boltLines, ln)
+    -- Orbiting dots
+    local orbiters = {}
+    for i = 1, 8 do
+        local d = Drawing.new("Circle")
+        d.Radius = 2.2
+        d.Filled = true
+        d.NumSides = 12
+        d.Color = COL_GLOW
+        d.Visible = true
+        d.Transparency = 1
+        d.Position = Vector2.new(cx, cy)
+        table.insert(orbiters, { draw = d, angle = (i / 8) * math.pi * 2 })
     end
 
-    -- Glow pass (thicker, lighter)
-    local boltGlowLines = {}
-    for i = 1, #boltPoints - 1 do
-        local ln = Drawing.new("Line")
-        ln.From = boltPoints[i]
-        ln.To = boltPoints[i]
-        ln.Color = boltGlow
-        ln.Thickness = 10
-        ln.Visible = true
-        ln.Transparency = 1
-        table.insert(boltGlowLines, ln)
+    -- Horizontal energy beams
+    local beamL = Drawing.new("Line")
+    beamL.Thickness = 2
+    beamL.Color = COL_CORE
+    beamL.Visible = true
+    beamL.Transparency = 1
+    beamL.From = Vector2.new(cx, cy)
+    beamL.To = Vector2.new(cx, cy)
+
+    local beamR = Drawing.new("Line")
+    beamR.Thickness = 2
+    beamR.Color = COL_CORE
+    beamR.Visible = true
+    beamR.Transparency = 1
+    beamR.From = Vector2.new(cx, cy)
+    beamR.To = Vector2.new(cx, cy)
+
+    -- Title pieces
+    local title = Drawing.new("Text")
+    title.Text = "ORIDIUM"
+    title.Size = 44
+    title.Center = true
+    title.Outline = true
+    title.OutlineColor = Color3.fromRGB(0, 0, 0)
+    title.Color = COL_CORE
+    title.Position = Vector2.new(cx, cy - 10)
+    title.Visible = true
+    title.Transparency = 1
+
+    local sub = Drawing.new("Text")
+    sub.Text = "INTERFACE"
+    sub.Size = 15
+    sub.Center = true
+    sub.Outline = true
+    sub.Color = COL_GLOW
+    sub.Position = Vector2.new(cx, cy + 26)
+    sub.Visible = true
+    sub.Transparency = 1
+
+    local credit = Drawing.new("Text")
+    credit.Text = "by @cuakieffer"
+    credit.Size = 13
+    credit.Center = true
+    credit.Outline = true
+    credit.Color = COL_DIM
+    credit.Position = Vector2.new(cx, cy + 48)
+    credit.Visible = true
+    credit.Transparency = 1
+
+    -- Underline
+    local underline = Drawing.new("Line")
+    underline.Thickness = 1.5
+    underline.Color = COL_CORE
+    underline.Visible = true
+    underline.Transparency = 1
+    underline.From = Vector2.new(cx, cy + 12)
+    underline.To = Vector2.new(cx, cy + 12)
+
+    -- Spark particles for final burst
+    local sparks = {}
+    for i = 1, 24 do
+        local s = Drawing.new("Circle")
+        s.Radius = math.random(1, 2)
+        s.Filled = true
+        s.NumSides = 8
+        s.Color = (i % 2 == 0) and COL_GLOW or COL_WHITE
+        s.Visible = false
+        s.Transparency = 0
+        s.Position = Vector2.new(cx, cy)
+        local a = math.rad(math.random(0, 360))
+        local sp = math.random(25, 90) / 10
+        table.insert(sparks, { draw = s, vx = math.cos(a) * sp, vy = math.sin(a) * sp })
     end
-
-    -- Full-screen flash
-    local flash = Drawing.new("Square")
-    flash.Size = Vector2.new(sw, sh)
-    flash.Position = Vector2.new(0, 0)
-    flash.Color = Color3.fromRGB(255, 255, 255)
-    flash.Filled = true
-    flash.Visible = false
-    flash.Transparency = 1
-
-    -- Particles
-    local particles = {}
-    for i = 1, 48 do
-        local dot = Drawing.new("Circle")
-        dot.Radius = math.random(1, 3)
-        dot.Filled = true
-        dot.NumSides = 12
-        dot.Color = (i % 3 == 0) and boltColor or Color3.fromRGB(150, 210, 255)
-        dot.Position = Vector2.new(cx, cy)
-        dot.Visible = false
-        dot.Transparency = 0
-        local angle = math.rad(math.random(0, 360))
-        local speed = math.random(40, 160) / 10
-        table.insert(particles, {
-            draw = dot,
-            vx = math.cos(angle) * speed,
-            vy = math.sin(angle) * speed,
-        })
-    end
-
-    -- Label (full, then split for slice)
-    local label = Drawing.new("Text")
-    label.Text = "Oridium Interface"
-    label.Size = 36
-    label.Center = true
-    label.Outline = true
-    label.OutlineColor = Color3.fromRGB(0, 0, 0)
-    label.Color = Color3.fromRGB(100, 180, 255)
-    label.Position = Vector2.new(cx, cy)
-    label.Visible = false
-    label.Transparency = 1
-
-    local labelL = Drawing.new("Text")
-    labelL.Text = "Oridium"
-    labelL.Size = 36
-    labelL.Center = true
-    labelL.Outline = true
-    labelL.OutlineColor = Color3.fromRGB(0, 0, 0)
-    labelL.Color = Color3.fromRGB(100, 180, 255)
-    labelL.Position = Vector2.new(cx - 70, cy)
-    labelL.Visible = false
-    labelL.Transparency = 1
-
-    local labelR = Drawing.new("Text")
-    labelR.Text = "Interface"
-    labelR.Size = 36
-    labelR.Center = true
-    labelR.Outline = true
-    labelR.OutlineColor = Color3.fromRGB(0, 0, 0)
-    labelR.Color = Color3.fromRGB(100, 180, 255)
-    labelR.Position = Vector2.new(cx + 90, cy)
-    labelR.Visible = false
-    labelR.Transparency = 1
-
-    -- Slice line
-    local slice = Drawing.new("Line")
-    slice.Color = Color3.fromRGB(255, 255, 255)
-    slice.Thickness = 2
-    slice.Visible = false
-    slice.Transparency = 0
-    slice.From = Vector2.new(cx, cy - 40)
-    slice.To = Vector2.new(cx, cy - 40)
 
     task.spawn(function()
-        -- 1) Draw lightning bolt top -> bottom
-        for i, ln in ipairs(boltGlowLines) do
-            ln.Transparency = 0.55
-            ln.To = boltPoints[i + 1]
-            boltLines[i].Transparency = 0
-            boltLines[i].To = boltPoints[i + 1]
-            task.wait(0.04)
-        end
-
-        task.wait(0.12)
-
-        -- Bolt flash pulse
-        for _ = 1, 3 do
-            for _, ln in ipairs(boltLines) do ln.Color = Color3.fromRGB(255, 255, 200) end
-            task.wait(0.03)
-            for _, ln in ipairs(boltLines) do ln.Color = boltColor end
-            task.wait(0.03)
-        end
-
-        -- 2) Screen flash
-        flash.Visible = true
-        flash.Transparency = 0
-        for i = 1, 14 do
-            flash.Transparency = i / 14
+        -- Phase 1: Core ignites
+        for i = 1, 12 do
+            local t = i / 12
+            core.Transparency = 1 - t
+            core.Radius = 2 + t * 6
             task.wait(0.018)
         end
-        flash.Visible = false
 
-        -- Hide bolt
-        for _, ln in ipairs(boltLines) do ln.Visible = false end
-        for _, ln in ipairs(boltGlowLines) do ln.Visible = false end
+        -- Phase 2: Rings expand staggered + orbiters appear
+        for frame = 1, 36 do
+            local t = frame / 36
 
-        -- 3) Electric particles spread
-        for _, p in ipairs(particles) do
-            p.draw.Visible = true
-            p.draw.Position = Vector2.new(cx, cy)
-            p.draw.Transparency = 0
-        end
-
-        for frame = 1, 28 do
-            local t = frame / 28
-            for _, p in ipairs(particles) do
-                local pos = p.draw.Position
-                p.draw.Position = Vector2.new(pos.X + p.vx, pos.Y + p.vy)
-                p.draw.Transparency = t
-                p.vx = p.vx * 0.97
-                p.vy = p.vy * 0.97
+            for ri, ring in ipairs(rings) do
+                local delay = (ri - 1) * 0.18
+                local localT = math.clamp((t - delay) / (1 - delay), 0, 1)
+                ring.Radius = 8 + localT * (50 + ri * 22)
+                ring.Transparency = 1 - localT * 0.75 + localT * localT * 0.6
             end
+
+            for _, o in ipairs(orbiters) do
+                o.angle = o.angle + 0.12
+                local radius = 18 + t * 28
+                o.draw.Position = Vector2.new(
+                    cx + math.cos(o.angle) * radius,
+                    cy + math.sin(o.angle) * radius
+                )
+                o.draw.Transparency = 1 - t
+            end
+
+            core.Radius = 8 + math.sin(t * math.pi * 3) * 2
             task.wait(0.016)
         end
 
-        for _, p in ipairs(particles) do
-            p.draw.Visible = false
+        -- Phase 3: Beams shoot left/right
+        for i = 1, 14 do
+            local t = i / 14
+            beamL.Transparency = 1 - t
+            beamR.Transparency = 1 - t
+            beamL.From = Vector2.new(cx, cy)
+            beamL.To = Vector2.new(cx - t * (sw * 0.42), cy)
+            beamR.From = Vector2.new(cx, cy)
+            beamR.To = Vector2.new(cx + t * (sw * 0.42), cy)
+            task.wait(0.014)
         end
 
-        -- 4) Show label
-        label.Visible = true
-        for i = 1, 16 do
-            label.Transparency = 1 - (i / 16)
-            task.wait(0.02)
-        end
+        -- Phase 4: Title forms
+        for i = 1, 18 do
+            local t = i / 18
+            title.Transparency = 1 - t
+            sub.Transparency = 1 - t
+            credit.Transparency = 1 - t * 0.8
+            underline.Transparency = 1 - t
+            underline.From = Vector2.new(cx - t * 56, cy + 12)
+            underline.To = Vector2.new(cx + t * 56, cy + 12)
 
-        task.wait(0.45)
-
-        -- 5) Slice the label
-        slice.Visible = true
-        slice.From = Vector2.new(cx, cy - 50)
-        slice.To = Vector2.new(cx, cy - 50)
-        for i = 1, 10 do
-            local t = i / 10
-            slice.To = Vector2.new(cx, cy - 50 + t * 100)
-            task.wait(0.015)
-        end
-
-        -- Split into two halves and push apart
-        label.Visible = false
-        labelL.Visible = true
-        labelR.Visible = true
-        labelL.Transparency = 0
-        labelR.Transparency = 0
-
-        for i = 1, 20 do
-            local t = i / 20
-            labelL.Position = Vector2.new(cx - 70 - t * 55, cy - t * 8)
-            labelR.Position = Vector2.new(cx + 90 + t * 55, cy + t * 8)
-            labelL.Transparency = t
-            labelR.Transparency = t
-            slice.Transparency = t
+            -- Dim rings while text appears
+            for _, ring in ipairs(rings) do
+                ring.Transparency = math.clamp(ring.Transparency + 0.03, 0, 1)
+            end
+            for _, o in ipairs(orbiters) do
+                o.draw.Transparency = math.clamp(o.draw.Transparency + 0.04, 0, 1)
+            end
+            beamL.Transparency = math.clamp(beamL.Transparency + 0.05, 0, 1)
+            beamR.Transparency = math.clamp(beamR.Transparency + 0.05, 0, 1)
             task.wait(0.018)
         end
 
+        -- Phase 5: Soft title pulse + core flash
+        for i = 1, 8 do
+            title.Color = (i % 2 == 0) and COL_WHITE or COL_CORE
+            core.Radius = 8 + (i % 2) * 5
+            core.Transparency = (i % 2) * 0.25
+            task.wait(0.045)
+        end
+        title.Color = COL_CORE
+        core.Transparency = 0.15
+
+        task.wait(0.35)
+
+        -- Phase 6: Spark burst + fade all
+        for _, s in ipairs(sparks) do
+            s.draw.Visible = true
+            s.draw.Position = Vector2.new(cx, cy)
+            s.draw.Transparency = 0
+        end
+
+        for frame = 1, 26 do
+            local t = frame / 26
+
+            title.Transparency = t
+            sub.Transparency = t
+            credit.Transparency = t
+            underline.Transparency = t
+            core.Transparency = 0.15 + t * 0.85
+            core.Radius = 8 + t * 30
+
+            for _, ring in ipairs(rings) do
+                ring.Transparency = 1
+            end
+            for _, o in ipairs(orbiters) do
+                o.draw.Transparency = 1
+            end
+            beamL.Transparency = 1
+            beamR.Transparency = 1
+
+            for _, s in ipairs(sparks) do
+                local p = s.draw.Position
+                s.draw.Position = Vector2.new(p.X + s.vx, p.Y + s.vy)
+                s.draw.Transparency = t
+                s.vx = s.vx * 0.96
+                s.vy = s.vy * 0.96
+            end
+
+            task.wait(0.016)
+        end
+
         -- Cleanup
-        label:Remove()
-        labelL:Remove()
-        labelR:Remove()
-        slice:Remove()
-        flash:Remove()
-        for _, ln in ipairs(boltLines) do ln:Remove() end
-        for _, ln in ipairs(boltGlowLines) do ln:Remove() end
-        for _, p in ipairs(particles) do p.draw:Remove() end
+        core:Remove()
+        title:Remove()
+        sub:Remove()
+        credit:Remove()
+        underline:Remove()
+        beamL:Remove()
+        beamR:Remove()
+        for _, ring in ipairs(rings) do ring:Remove() end
+        for _, o in ipairs(orbiters) do o.draw:Remove() end
+        for _, s in ipairs(sparks) do s.draw:Remove() end
     end)
 
-    task.wait(3.4)
+    task.wait(3.2)
 end
 
 -- ==================== WINDOW ====================
