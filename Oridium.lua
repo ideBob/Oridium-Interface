@@ -134,6 +134,7 @@ local Tabs = {
     Player               = Window:AddTab('Player'),
     ['Customization']    = Window:AddTab('Player Customization'),
     ['Good/Bad']         = Window:AddTab('Good/Bad Boys'),
+    ['UI Customization'] = Window:AddTab('UI Customization'),
     ['UI Settings']      = Window:AddTab('UI Settings'),
 }
 
@@ -147,6 +148,8 @@ local CustomBox     = Tabs['Customization']:AddLeftGroupbox('Accessories')
 local CustomInfoBox = Tabs['Customization']:AddRightGroupbox('Info')
 local BoysBox       = Tabs['Good/Bad']:AddLeftGroupbox('Oridium Boys')
 local ActionsBox    = Tabs['Good/Bad']:AddRightGroupbox('Actions')
+local UIThemeBox    = Tabs['UI Customization']:AddLeftGroupbox('Themes')
+local UITransBox    = Tabs['UI Customization']:AddRightGroupbox('Transparency')
 
 -- ==================== SERVICES & SHARED ====================
 local UserInputService = game:GetService("UserInputService")
@@ -175,6 +178,128 @@ local function isValidTarget(player)
         and player.Character:FindFirstChild("Humanoid")
         and player.Character.Humanoid.Health > 0
 end
+
+-- ==================== UI CUSTOMIZATION ====================
+local Themes = {
+    ["Oridium Blue"] = { Accent = Color3.fromRGB(100, 180, 255), Dark = Color3.fromRGB(60, 120, 180) },
+    ["Bright Blue"]  = { Accent = Color3.fromRGB(0, 150, 255),   Dark = Color3.fromRGB(0, 90, 180) },
+    ["Cyan"]         = { Accent = Color3.fromRGB(0, 220, 255),   Dark = Color3.fromRGB(0, 140, 180) },
+    ["Purple"]       = { Accent = Color3.fromRGB(160, 80, 255),  Dark = Color3.fromRGB(100, 40, 180) },
+    ["Pink"]         = { Accent = Color3.fromRGB(255, 80, 160),  Dark = Color3.fromRGB(180, 40, 100) },
+    ["Red"]          = { Accent = Color3.fromRGB(255, 60, 60),   Dark = Color3.fromRGB(180, 30, 30) },
+    ["Orange"]       = { Accent = Color3.fromRGB(255, 140, 40),  Dark = Color3.fromRGB(180, 90, 20) },
+    ["Green"]        = { Accent = Color3.fromRGB(60, 220, 100),  Dark = Color3.fromRGB(30, 140, 60) },
+    ["Mint"]         = { Accent = Color3.fromRGB(80, 255, 200),  Dark = Color3.fromRGB(40, 170, 130) },
+    ["Gold"]         = { Accent = Color3.fromRGB(255, 200, 50),  Dark = Color3.fromRGB(180, 140, 20) },
+    ["White"]        = { Accent = Color3.fromRGB(240, 240, 240), Dark = Color3.fromRGB(160, 160, 160) },
+    ["Crimson"]      = { Accent = Color3.fromRGB(220, 20, 60),   Dark = Color3.fromRGB(140, 10, 35) },
+}
+
+local function applyTheme(themeName)
+    local theme = Themes[themeName]
+    if not theme then return end
+
+    Library.AccentColor = theme.Accent
+    Library.AccentColorDark = theme.Dark
+
+    if Library.UpdateColorsUsingRegistry then
+        pcall(function()
+            Library:UpdateColorsUsingRegistry()
+        end)
+    end
+
+    Library:Notify("Theme: " .. themeName, 2)
+end
+
+UIThemeBox:AddDropdown('UITheme', {
+    Values = { "Oridium Blue", "Bright Blue", "Cyan", "Purple", "Pink", "Red", "Orange", "Green", "Mint", "Gold", "White", "Crimson" },
+    Default = 1,
+    Multi = false,
+    Text = 'Theme',
+    Tooltip = 'Change the UI accent color',
+    Callback = function(Value)
+        applyTheme(Value)
+    end
+})
+
+UIThemeBox:AddLabel('Pick a theme from the dropdown')
+UIThemeBox:AddLabel('Changes accent color instantly')
+
+-- Transparency
+local transparencyEnabled = false
+local transparencyValue = 0 -- 0 = solid, 1 = fully transparent (we'll map 1-100% to this)
+
+local function applyTransparency(percent)
+    -- percent: 1 to 100
+    local alpha = math.clamp(percent / 100, 0.01, 1)
+    -- Linoria uses BackgroundColor etc; try setting main window transparency
+    pcall(function()
+        if Library.InnerVideoBackground then
+            -- skip
+        end
+        -- Walk common Linoria UI holders
+        for _, gui in ipairs(game:GetService("CoreGui"):GetDescendants()) do
+            if gui:IsA("Frame") and (gui.Name == "Main" or gui.Name == "Holder" or gui.Name == "Window") then
+                if transparencyEnabled then
+                    gui.BackgroundTransparency = alpha
+                end
+            end
+        end
+        if typeof(gethui) == "function" then
+            for _, gui in ipairs(gethui():GetDescendants()) do
+                if gui:IsA("Frame") and (gui.Name:find("Main") or gui.Name:find("Window") or gui.Name:find("Holder")) then
+                    if transparencyEnabled then
+                        gui.BackgroundTransparency = alpha
+                    end
+                end
+            end
+        end
+    end)
+end
+
+UITransBox:AddToggle('ToggleTransparency', {
+    Text = 'Toggle Transparency',
+    Default = false,
+    Tooltip = 'Enable UI transparency',
+    Callback = function(Value)
+        transparencyEnabled = Value
+        if Value then
+            applyTransparency(transparencyValue > 0 and transparencyValue or 30)
+            Library:Notify("Transparency ON", 2)
+        else
+            -- Reset transparency
+            pcall(function()
+                if typeof(gethui) == "function" then
+                    for _, gui in ipairs(gethui():GetDescendants()) do
+                        if gui:IsA("Frame") and (gui.Name:find("Main") or gui.Name:find("Window") or gui.Name:find("Holder")) then
+                            gui.BackgroundTransparency = 0
+                        end
+                    end
+                end
+            end)
+            Library:Notify("Transparency OFF", 2)
+        end
+    end
+})
+
+UITransBox:AddSlider('TransparencySlider', {
+    Text = 'Transparency',
+    Default = 30,
+    Min = 1,
+    Max = 100,
+    Rounding = 0,
+    Suffix = '%',
+    Tooltip = '1% = almost solid, 100% = very transparent',
+    Callback = function(Value)
+        transparencyValue = Value
+        if transparencyEnabled then
+            applyTransparency(Value)
+        end
+    end
+})
+
+UITransBox:AddLabel('Slider only works when')
+UITransBox:AddLabel('Toggle Transparency is ON')
 
 -- ==================== PLAYER CUSTOMIZATION ====================
 local CustomAssets = {
@@ -216,7 +341,7 @@ local function applyAsset(assetData)
                 face.Texture = "rbxassetid://" .. id
             end
         end
-    else -- Accessory
+    else
         local success, model = pcall(function()
             return InsertService:LoadAsset(id)
         end)
@@ -261,7 +386,6 @@ local function loadAllCustom()
     end
 end
 
--- UI for Customization
 for _, asset in ipairs(CustomAssets) do
     CustomBox:AddLabel(asset.Name .. "  |  " .. tostring(asset.Id))
 end
