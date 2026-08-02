@@ -8,134 +8,244 @@ local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
 local ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua'))()
 local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
 
--- ==================== INTRO ANIMATION (REVAMPED) ====================
+-- ==================== INTRO ANIMATION ====================
+-- Lightning bolt -> screen flash -> electric particles -> label -> slice
 do
     local Camera = workspace.CurrentCamera
-    local cx = Camera.ViewportSize.X / 2
-    local cy = Camera.ViewportSize.Y / 2
-    local center = Vector2.new(cx, cy)
+    local sw, sh = Camera.ViewportSize.X, Camera.ViewportSize.Y
+    local cx, cy = sw / 2, sh / 2
 
-    -- Outer ring
-    local ring = Drawing.new("Circle")
-    ring.Position = center
-    ring.Radius = 8
-    ring.Color = Color3.fromRGB(100, 180, 255)
-    ring.Thickness = 2
-    ring.Filled = false
-    ring.NumSides = 64
-    ring.Visible = true
-    ring.Transparency = 1
+    local boltColor = Color3.fromRGB(255, 210, 40)
+    local boltGlow = Color3.fromRGB(255, 240, 120)
 
-    -- Inner glow
-    local glow = Drawing.new("Circle")
-    glow.Position = center
-    glow.Radius = 4
-    glow.Color = Color3.fromRGB(180, 220, 255)
-    glow.Thickness = 1
-    glow.Filled = true
-    glow.NumSides = 48
-    glow.Visible = true
-    glow.Transparency = 1
+    -- Lightning bolt shape (reference-style zig-zag)
+    -- Points relative to center, scaled
+    local scale = math.min(sw, sh) * 0.22
+    local boltLocal = {
+        Vector2.new(0.15, -1.00),
+        Vector2.new(-0.25, -0.15),
+        Vector2.new(0.05, -0.15),
+        Vector2.new(-0.35, 1.00),
+        Vector2.new(0.20, 0.05),
+        Vector2.new(-0.05, 0.05),
+        Vector2.new(0.30, -0.55),
+    }
+    -- Reordered into a proper bolt polyline (top to bottom)
+    boltLocal = {
+        Vector2.new(0.10, -1.00),
+        Vector2.new(-0.35, -0.05),
+        Vector2.new(0.05, -0.05),
+        Vector2.new(-0.20, 0.35),
+        Vector2.new(0.25, 0.35),
+        Vector2.new(-0.15, 1.00),
+    }
 
-    -- Title
-    local title = Drawing.new("Text")
-    title.Text = "ORIDIUM"
-    title.Size = 42
-    title.Center = true
-    title.Outline = true
-    title.OutlineColor = Color3.fromRGB(0, 0, 0)
-    title.Color = Color3.fromRGB(100, 180, 255)
-    title.Position = center + Vector2.new(0, -8)
-    title.Visible = true
-    title.Transparency = 1
+    local boltPoints = {}
+    for _, p in ipairs(boltLocal) do
+        table.insert(boltPoints, Vector2.new(cx + p.X * scale, cy + p.Y * scale))
+    end
 
-    -- Subtitle
-    local sub = Drawing.new("Text")
-    sub.Text = "INTERFACE"
-    sub.Size = 16
-    sub.Center = true
-    sub.Outline = true
-    sub.Color = Color3.fromRGB(160, 200, 255)
-    sub.Position = center + Vector2.new(0, 28)
-    sub.Visible = true
-    sub.Transparency = 1
+    local boltLines = {}
+    for i = 1, #boltPoints - 1 do
+        local ln = Drawing.new("Line")
+        ln.From = boltPoints[i]
+        ln.To = boltPoints[i]
+        ln.Color = boltColor
+        ln.Thickness = 5
+        ln.Visible = true
+        ln.Transparency = 1
+        table.insert(boltLines, ln)
+    end
 
-    -- Credit
-    local credit = Drawing.new("Text")
-    credit.Text = "by @cuakieffer"
-    credit.Size = 14
-    credit.Center = true
-    credit.Outline = true
-    credit.Color = Color3.fromRGB(120, 160, 200)
-    credit.Position = center + Vector2.new(0, 52)
-    credit.Visible = true
-    credit.Transparency = 1
+    -- Glow pass (thicker, lighter)
+    local boltGlowLines = {}
+    for i = 1, #boltPoints - 1 do
+        local ln = Drawing.new("Line")
+        ln.From = boltPoints[i]
+        ln.To = boltPoints[i]
+        ln.Color = boltGlow
+        ln.Thickness = 10
+        ln.Visible = true
+        ln.Transparency = 1
+        table.insert(boltGlowLines, ln)
+    end
 
-    -- Accent line under title
-    local line = Drawing.new("Line")
-    line.From = Vector2.new(cx, cy + 14)
-    line.To = Vector2.new(cx, cy + 14)
-    line.Color = Color3.fromRGB(100, 180, 255)
-    line.Thickness = 1.5
-    line.Visible = true
-    line.Transparency = 1
+    -- Full-screen flash
+    local flash = Drawing.new("Square")
+    flash.Size = Vector2.new(sw, sh)
+    flash.Position = Vector2.new(0, 0)
+    flash.Color = Color3.fromRGB(255, 255, 255)
+    flash.Filled = true
+    flash.Visible = false
+    flash.Transparency = 1
+
+    -- Particles
+    local particles = {}
+    for i = 1, 48 do
+        local dot = Drawing.new("Circle")
+        dot.Radius = math.random(1, 3)
+        dot.Filled = true
+        dot.NumSides = 12
+        dot.Color = (i % 3 == 0) and boltColor or Color3.fromRGB(150, 210, 255)
+        dot.Position = Vector2.new(cx, cy)
+        dot.Visible = false
+        dot.Transparency = 0
+        local angle = math.rad(math.random(0, 360))
+        local speed = math.random(40, 160) / 10
+        table.insert(particles, {
+            draw = dot,
+            vx = math.cos(angle) * speed,
+            vy = math.sin(angle) * speed,
+        })
+    end
+
+    -- Label (full, then split for slice)
+    local label = Drawing.new("Text")
+    label.Text = "Oridium Interface"
+    label.Size = 36
+    label.Center = true
+    label.Outline = true
+    label.OutlineColor = Color3.fromRGB(0, 0, 0)
+    label.Color = Color3.fromRGB(100, 180, 255)
+    label.Position = Vector2.new(cx, cy)
+    label.Visible = false
+    label.Transparency = 1
+
+    local labelL = Drawing.new("Text")
+    labelL.Text = "Oridium"
+    labelL.Size = 36
+    labelL.Center = true
+    labelL.Outline = true
+    labelL.OutlineColor = Color3.fromRGB(0, 0, 0)
+    labelL.Color = Color3.fromRGB(100, 180, 255)
+    labelL.Position = Vector2.new(cx - 70, cy)
+    labelL.Visible = false
+    labelL.Transparency = 1
+
+    local labelR = Drawing.new("Text")
+    labelR.Text = "Interface"
+    labelR.Size = 36
+    labelR.Center = true
+    labelR.Outline = true
+    labelR.OutlineColor = Color3.fromRGB(0, 0, 0)
+    labelR.Color = Color3.fromRGB(100, 180, 255)
+    labelR.Position = Vector2.new(cx + 90, cy)
+    labelR.Visible = false
+    labelR.Transparency = 1
+
+    -- Slice line
+    local slice = Drawing.new("Line")
+    slice.Color = Color3.fromRGB(255, 255, 255)
+    slice.Thickness = 2
+    slice.Visible = false
+    slice.Transparency = 0
+    slice.From = Vector2.new(cx, cy - 40)
+    slice.To = Vector2.new(cx, cy - 40)
 
     task.spawn(function()
-        -- Expand ring + fade in glow
-        for i = 1, 24 do
-            local t = i / 24
-            ring.Radius = 8 + t * 70
-            ring.Transparency = 1 - t * 0.7
-            glow.Radius = 4 + t * 18
-            glow.Transparency = 1 - t * 0.45
+        -- 1) Draw lightning bolt top -> bottom
+        for i, ln in ipairs(boltGlowLines) do
+            ln.Transparency = 0.55
+            ln.To = boltPoints[i + 1]
+            boltLines[i].Transparency = 0
+            boltLines[i].To = boltPoints[i + 1]
+            task.wait(0.04)
+        end
+
+        task.wait(0.12)
+
+        -- Bolt flash pulse
+        for _ = 1, 3 do
+            for _, ln in ipairs(boltLines) do ln.Color = Color3.fromRGB(255, 255, 200) end
+            task.wait(0.03)
+            for _, ln in ipairs(boltLines) do ln.Color = boltColor end
+            task.wait(0.03)
+        end
+
+        -- 2) Screen flash
+        flash.Visible = true
+        flash.Transparency = 0
+        for i = 1, 14 do
+            flash.Transparency = i / 14
+            task.wait(0.018)
+        end
+        flash.Visible = false
+
+        -- Hide bolt
+        for _, ln in ipairs(boltLines) do ln.Visible = false end
+        for _, ln in ipairs(boltGlowLines) do ln.Visible = false end
+
+        -- 3) Electric particles spread
+        for _, p in ipairs(particles) do
+            p.draw.Visible = true
+            p.draw.Position = Vector2.new(cx, cy)
+            p.draw.Transparency = 0
+        end
+
+        for frame = 1, 28 do
+            local t = frame / 28
+            for _, p in ipairs(particles) do
+                local pos = p.draw.Position
+                p.draw.Position = Vector2.new(pos.X + p.vx, pos.Y + p.vy)
+                p.draw.Transparency = t
+                p.vx = p.vx * 0.97
+                p.vy = p.vy * 0.97
+            end
             task.wait(0.016)
         end
 
-        -- Fade in text
-        for i = 1, 18 do
-            local t = i / 18
-            title.Transparency = 1 - t
-            sub.Transparency = 1 - t
-            credit.Transparency = 1 - t * 0.85
-            line.Transparency = 1 - t
-            line.From = Vector2.new(cx - t * 48, cy + 14)
-            line.To = Vector2.new(cx + t * 48, cy + 14)
+        for _, p in ipairs(particles) do
+            p.draw.Visible = false
+        end
+
+        -- 4) Show label
+        label.Visible = true
+        for i = 1, 16 do
+            label.Transparency = 1 - (i / 16)
+            task.wait(0.02)
+        end
+
+        task.wait(0.45)
+
+        -- 5) Slice the label
+        slice.Visible = true
+        slice.From = Vector2.new(cx, cy - 50)
+        slice.To = Vector2.new(cx, cy - 50)
+        for i = 1, 10 do
+            local t = i / 10
+            slice.To = Vector2.new(cx, cy - 50 + t * 100)
+            task.wait(0.015)
+        end
+
+        -- Split into two halves and push apart
+        label.Visible = false
+        labelL.Visible = true
+        labelR.Visible = true
+        labelL.Transparency = 0
+        labelR.Transparency = 0
+
+        for i = 1, 20 do
+            local t = i / 20
+            labelL.Position = Vector2.new(cx - 70 - t * 55, cy - t * 8)
+            labelR.Position = Vector2.new(cx + 90 + t * 55, cy + t * 8)
+            labelL.Transparency = t
+            labelR.Transparency = t
+            slice.Transparency = t
             task.wait(0.018)
         end
 
-        -- Soft pulse on title
-        for i = 1, 10 do
-            local pulse = (i % 2 == 0) and Color3.fromRGB(160, 210, 255) or Color3.fromRGB(100, 180, 255)
-            title.Color = pulse
-            ring.Transparency = 0.25 + (i % 2) * 0.15
-            task.wait(0.04)
-        end
-        title.Color = Color3.fromRGB(100, 180, 255)
-
-        task.wait(0.65)
-
-        -- Fade everything out
-        for i = 1, 22 do
-            local t = i / 22
-            title.Transparency = t
-            sub.Transparency = t
-            credit.Transparency = t
-            line.Transparency = t
-            ring.Transparency = 0.3 + t * 0.7
-            glow.Transparency = 0.55 + t * 0.45
-            ring.Radius = 78 + t * 40
-            task.wait(0.016)
-        end
-
-        title:Remove()
-        sub:Remove()
-        credit:Remove()
-        line:Remove()
-        ring:Remove()
-        glow:Remove()
+        -- Cleanup
+        label:Remove()
+        labelL:Remove()
+        labelR:Remove()
+        slice:Remove()
+        flash:Remove()
+        for _, ln in ipairs(boltLines) do ln:Remove() end
+        for _, ln in ipairs(boltGlowLines) do ln:Remove() end
+        for _, p in ipairs(particles) do p.draw:Remove() end
     end)
 
-    task.wait(2.6)
+    task.wait(3.4)
 end
 
 -- ==================== WINDOW ====================
@@ -182,7 +292,7 @@ local function playWelcome()
 
     pcall(function()
         local sound = Instance.new("Sound")
-        sound.SoundId = "rbxassetid://4590657391" -- soft UI chime
+        sound.SoundId = "rbxassetid://4590657391"
         sound.Volume = 0.7
         sound.PlaybackSpeed = 1
         sound.Parent = SoundService
