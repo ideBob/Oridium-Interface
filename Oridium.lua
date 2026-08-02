@@ -8,115 +8,134 @@ local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
 local ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua'))()
 local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
 
--- ==================== INTRO ANIMATION ====================
+-- ==================== INTRO ANIMATION (REVAMPED) ====================
 do
     local Camera = workspace.CurrentCamera
-    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    local cx = Camera.ViewportSize.X / 2
+    local cy = Camera.ViewportSize.Y / 2
+    local center = Vector2.new(cx, cy)
 
+    -- Outer ring
+    local ring = Drawing.new("Circle")
+    ring.Position = center
+    ring.Radius = 8
+    ring.Color = Color3.fromRGB(100, 180, 255)
+    ring.Thickness = 2
+    ring.Filled = false
+    ring.NumSides = 64
+    ring.Visible = true
+    ring.Transparency = 1
+
+    -- Inner glow
+    local glow = Drawing.new("Circle")
+    glow.Position = center
+    glow.Radius = 4
+    glow.Color = Color3.fromRGB(180, 220, 255)
+    glow.Thickness = 1
+    glow.Filled = true
+    glow.NumSides = 48
+    glow.Visible = true
+    glow.Transparency = 1
+
+    -- Title
     local title = Drawing.new("Text")
-    title.Text = "Oridium..."
-    title.Size = 48
+    title.Text = "ORIDIUM"
+    title.Size = 42
     title.Center = true
     title.Outline = true
     title.OutlineColor = Color3.fromRGB(0, 0, 0)
     title.Color = Color3.fromRGB(100, 180, 255)
-    title.Position = center
+    title.Position = center + Vector2.new(0, -8)
     title.Visible = true
     title.Transparency = 1
 
+    -- Subtitle
     local sub = Drawing.new("Text")
-    sub.Text = "by @cuakieffer"
-    sub.Size = 18
+    sub.Text = "INTERFACE"
+    sub.Size = 16
     sub.Center = true
     sub.Outline = true
-    sub.Color = Color3.fromRGB(180, 220, 255)
-    sub.Position = center + Vector2.new(0, 40)
+    sub.Color = Color3.fromRGB(160, 200, 255)
+    sub.Position = center + Vector2.new(0, 28)
     sub.Visible = true
     sub.Transparency = 1
 
-    local boltSegments = {}
-    local boltPoints = {
-        Vector2.new(center.X - 10, center.Y - 220),
-        Vector2.new(center.X + 25, center.Y - 160),
-        Vector2.new(center.X - 15, center.Y - 100),
-        Vector2.new(center.X + 30, center.Y - 50),
-        Vector2.new(center.X - 5, center.Y - 10),
-        Vector2.new(center.X + 5, center.Y + 5),
-    }
+    -- Credit
+    local credit = Drawing.new("Text")
+    credit.Text = "by @cuakieffer"
+    credit.Size = 14
+    credit.Center = true
+    credit.Outline = true
+    credit.Color = Color3.fromRGB(120, 160, 200)
+    credit.Position = center + Vector2.new(0, 52)
+    credit.Visible = true
+    credit.Transparency = 1
 
-    for i = 1, #boltPoints - 1 do
-        local line = Drawing.new("Line")
-        line.From = boltPoints[i]
-        line.To = boltPoints[i]
-        line.Color = Color3.fromRGB(180, 220, 255)
-        line.Thickness = 3
-        line.Visible = true
-        line.Transparency = 1
-        table.insert(boltSegments, line)
-    end
-
-    local flash = Drawing.new("Circle")
-    flash.Position = center
-    flash.Radius = 5
-    flash.Color = Color3.fromRGB(255, 255, 255)
-    flash.Filled = true
-    flash.NumSides = 32
-    flash.Visible = false
-    flash.Transparency = 1
+    -- Accent line under title
+    local line = Drawing.new("Line")
+    line.From = Vector2.new(cx, cy + 14)
+    line.To = Vector2.new(cx, cy + 14)
+    line.Color = Color3.fromRGB(100, 180, 255)
+    line.Thickness = 1.5
+    line.Visible = true
+    line.Transparency = 1
 
     task.spawn(function()
-        for i = 1, 20 do
-            title.Transparency = 1 - (i / 20)
-            sub.Transparency = 1 - (i / 20)
-            task.wait(0.02)
-        end
-        task.wait(0.35)
-
-        for i, line in ipairs(boltSegments) do
-            line.Transparency = 0
-            line.To = boltPoints[i + 1]
-            task.wait(0.035)
+        -- Expand ring + fade in glow
+        for i = 1, 24 do
+            local t = i / 24
+            ring.Radius = 8 + t * 70
+            ring.Transparency = 1 - t * 0.7
+            glow.Radius = 4 + t * 18
+            glow.Transparency = 1 - t * 0.45
+            task.wait(0.016)
         end
 
-        flash.Visible = true
-        flash.Transparency = 0
-        for i = 1, 12 do
-            flash.Radius = 5 + i * 8
-            flash.Transparency = i / 12
-            task.wait(0.015)
+        -- Fade in text
+        for i = 1, 18 do
+            local t = i / 18
+            title.Transparency = 1 - t
+            sub.Transparency = 1 - t
+            credit.Transparency = 1 - t * 0.85
+            line.Transparency = 1 - t
+            line.From = Vector2.new(cx - t * 48, cy + 14)
+            line.To = Vector2.new(cx + t * 48, cy + 14)
+            task.wait(0.018)
         end
-        flash.Visible = false
 
-        local originalPos = title.Position
-        for i = 1, 14 do
-            title.Position = originalPos + Vector2.new(math.random(-8, 8), math.random(-5, 5))
-            title.Color = (i % 2 == 0) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(100, 180, 255)
-            task.wait(0.025)
+        -- Soft pulse on title
+        for i = 1, 10 do
+            local pulse = (i % 2 == 0) and Color3.fromRGB(160, 210, 255) or Color3.fromRGB(100, 180, 255)
+            title.Color = pulse
+            ring.Transparency = 0.25 + (i % 2) * 0.15
+            task.wait(0.04)
         end
-        title.Position = originalPos
         title.Color = Color3.fromRGB(100, 180, 255)
 
-        task.wait(0.55)
+        task.wait(0.65)
 
-        for i = 1, 25 do
-            local t = i / 25
+        -- Fade everything out
+        for i = 1, 22 do
+            local t = i / 22
             title.Transparency = t
             sub.Transparency = t
-            for _, line in ipairs(boltSegments) do
-                line.Transparency = t
-            end
-            task.wait(0.018)
+            credit.Transparency = t
+            line.Transparency = t
+            ring.Transparency = 0.3 + t * 0.7
+            glow.Transparency = 0.55 + t * 0.45
+            ring.Radius = 78 + t * 40
+            task.wait(0.016)
         end
 
         title:Remove()
         sub:Remove()
-        flash:Remove()
-        for _, line in ipairs(boltSegments) do
-            line:Remove()
-        end
+        credit:Remove()
+        line:Remove()
+        ring:Remove()
+        glow:Remove()
     end)
 
-    task.wait(2.8)
+    task.wait(2.6)
 end
 
 -- ==================== WINDOW ====================
@@ -146,6 +165,7 @@ local AntiBox      = Tabs.Player:AddRightGroupbox('Anti Detection')
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -156,6 +176,28 @@ getgenv().Oridium = getgenv().Oridium or {
     AntiDetection = false,
 }
 
+-- ==================== WELCOME NOTIFY + AUDIO ====================
+local function playWelcome()
+    Library:Notify("Thank You For Executing Oridium Interface", 5)
+
+    pcall(function()
+        local sound = Instance.new("Sound")
+        sound.SoundId = "rbxassetid://4590657391" -- soft UI chime
+        sound.Volume = 0.7
+        sound.PlaybackSpeed = 1
+        sound.Parent = SoundService
+        sound:Play()
+        sound.Ended:Connect(function()
+            sound:Destroy()
+        end)
+        task.delay(6, function()
+            if sound then pcall(function() sound:Destroy() end) end
+        end)
+    end)
+end
+
+task.defer(playWelcome)
+
 local function isValidTarget(player)
     return player and player.Character
         and player.Character:FindFirstChild("Head")
@@ -164,11 +206,10 @@ local function isValidTarget(player)
 end
 
 -- ==================== DA HOOD CHECK ====================
--- Only enable silent aim logic on real Da Hood places
 local DA_HOOD_PLACE_IDS = {
-    [2788229376] = true,  -- Da Hood
-    [7213786345] = true,  -- Da Hood related
-    [9825515356] = true,  -- Da Hood variants
+    [2788229376] = true,
+    [7213786345] = true,
+    [9825515356] = true,
     [1008451066] = true,
     [5602055394] = true,
     [9183933413] = true,
@@ -178,15 +219,17 @@ local function isDaHood()
     if DA_HOOD_PLACE_IDS[game.PlaceId] then
         return true
     end
-    local name = string.lower(tostring(game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or ""))
-    if string.find(name, "da hood") or string.find(name, "dahood") then
+    local ok, name = pcall(function()
+        return string.lower(tostring(game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or ""))
+    end)
+    if ok and name and (string.find(name, "da hood") or string.find(name, "dahood")) then
         return true
     end
-    -- Fallback: MainEvent exists (classic Da Hood gun system)
-    local ok = pcall(function()
-        return game:GetService("ReplicatedStorage"):FindFirstChild("MainEvent") ~= nil
+    local found = false
+    pcall(function()
+        found = game:GetService("ReplicatedStorage"):FindFirstChild("MainEvent") ~= nil
     end)
-    return ok and game:GetService("ReplicatedStorage"):FindFirstChild("MainEvent") ~= nil
+    return found
 end
 
 local ON_DA_HOOD = isDaHood()
@@ -225,10 +268,8 @@ if ON_DA_HOOD then
             if getgenv().Oridium.SilentAim and getgenv().Oridium.SilentTarget then
                 local target = getgenv().Oridium.SilentTarget
 
-                -- Da Hood MainEvent Shoot
                 if method == "FireServer" and tostring(self.Name) == "MainEvent" then
                     if args[1] == "Shoot" or args[1] == "ShootGun" or args[1] == "MousePos" then
-                        -- redirect mouse position style args when present
                         for i = 2, #args do
                             if typeof(args[i]) == "Vector3" then
                                 args[i] = target.Position
@@ -238,7 +279,6 @@ if ON_DA_HOOD then
                     end
                 end
 
-                -- Raycasts used by some DH gun scripts
                 if method == "Raycast" and self == workspace then
                     local origin = args[1]
                     if typeof(origin) == "Vector3" then
@@ -350,13 +390,11 @@ FOVCircle.Radius = aimbotFOV / 2
 FOVCircle.Filled = false
 FOVCircle.Visible = false
 
--- Snap line: not too skinny
 local SnapLine = Drawing.new("Line")
 SnapLine.Color = lightBlue
 SnapLine.Thickness = 1.8
 SnapLine.Visible = false
 
--- Head dot: skinny / small
 local HeadDot = Drawing.new("Circle")
 HeadDot.Color = lightBlue
 HeadDot.Thickness = 1
@@ -655,7 +693,6 @@ local function updateOridiumLine(player)
         return
     end
 
-    -- From bottom center of screen to head
     local from = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
     line.From = from
     line.To = Vector2.new(sp.X, sp.Y)
