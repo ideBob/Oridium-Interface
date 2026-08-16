@@ -19,7 +19,6 @@ do
     local COL_WHITE = Color3.fromRGB(255, 255, 255)
     local COL_DIM = Color3.fromRGB(60, 110, 180)
 
-    -- Center core
     local core = Drawing.new("Circle")
     core.Position = Vector2.new(cx, cy)
     core.Radius = 2
@@ -29,7 +28,6 @@ do
     core.Visible = true
     core.Transparency = 1
 
-    -- Expanding rings
     local rings = {}
     for i = 1, 3 do
         local r = Drawing.new("Circle")
@@ -44,7 +42,6 @@ do
         table.insert(rings, r)
     end
 
-    -- Orbiting dots
     local orbiters = {}
     for i = 1, 8 do
         local d = Drawing.new("Circle")
@@ -58,7 +55,6 @@ do
         table.insert(orbiters, { draw = d, angle = (i / 8) * math.pi * 2 })
     end
 
-    -- Horizontal energy beams
     local beamL = Drawing.new("Line")
     beamL.Thickness = 2
     beamL.Color = COL_CORE
@@ -75,7 +71,6 @@ do
     beamR.From = Vector2.new(cx, cy)
     beamR.To = Vector2.new(cx, cy)
 
-    -- Title pieces
     local title = Drawing.new("Text")
     title.Text = "ORIDIUM"
     title.Size = 44
@@ -107,7 +102,6 @@ do
     credit.Visible = true
     credit.Transparency = 1
 
-    -- Underline
     local underline = Drawing.new("Line")
     underline.Thickness = 1.5
     underline.Color = COL_CORE
@@ -116,7 +110,6 @@ do
     underline.From = Vector2.new(cx, cy + 12)
     underline.To = Vector2.new(cx, cy + 12)
 
-    -- Spark particles for final burst
     local sparks = {}
     for i = 1, 24 do
         local s = Drawing.new("Circle")
@@ -133,7 +126,6 @@ do
     end
 
     task.spawn(function()
-        -- Phase 1: Core ignites
         for i = 1, 12 do
             local t = i / 12
             core.Transparency = 1 - t
@@ -141,32 +133,24 @@ do
             task.wait(0.018)
         end
 
-        -- Phase 2: Rings expand staggered + orbiters appear
         for frame = 1, 36 do
             local t = frame / 36
-
             for ri, ring in ipairs(rings) do
                 local delay = (ri - 1) * 0.18
                 local localT = math.clamp((t - delay) / (1 - delay), 0, 1)
                 ring.Radius = 8 + localT * (50 + ri * 22)
                 ring.Transparency = 1 - localT * 0.75 + localT * localT * 0.6
             end
-
             for _, o in ipairs(orbiters) do
                 o.angle = o.angle + 0.12
                 local radius = 18 + t * 28
-                o.draw.Position = Vector2.new(
-                    cx + math.cos(o.angle) * radius,
-                    cy + math.sin(o.angle) * radius
-                )
+                o.draw.Position = Vector2.new(cx + math.cos(o.angle) * radius, cy + math.sin(o.angle) * radius)
                 o.draw.Transparency = 1 - t
             end
-
             core.Radius = 8 + math.sin(t * math.pi * 3) * 2
             task.wait(0.016)
         end
 
-        -- Phase 3: Beams shoot left/right
         for i = 1, 14 do
             local t = i / 14
             beamL.Transparency = 1 - t
@@ -178,7 +162,6 @@ do
             task.wait(0.014)
         end
 
-        -- Phase 4: Title forms
         for i = 1, 18 do
             local t = i / 18
             title.Transparency = 1 - t
@@ -187,20 +170,13 @@ do
             underline.Transparency = 1 - t
             underline.From = Vector2.new(cx - t * 56, cy + 12)
             underline.To = Vector2.new(cx + t * 56, cy + 12)
-
-            -- Dim rings while text appears
-            for _, ring in ipairs(rings) do
-                ring.Transparency = math.clamp(ring.Transparency + 0.03, 0, 1)
-            end
-            for _, o in ipairs(orbiters) do
-                o.draw.Transparency = math.clamp(o.draw.Transparency + 0.04, 0, 1)
-            end
+            for _, ring in ipairs(rings) do ring.Transparency = math.clamp(ring.Transparency + 0.03, 0, 1) end
+            for _, o in ipairs(orbiters) do o.draw.Transparency = math.clamp(o.draw.Transparency + 0.04, 0, 1) end
             beamL.Transparency = math.clamp(beamL.Transparency + 0.05, 0, 1)
             beamR.Transparency = math.clamp(beamR.Transparency + 0.05, 0, 1)
             task.wait(0.018)
         end
 
-        -- Phase 5: Soft title pulse + core flash
         for i = 1, 8 do
             title.Color = (i % 2 == 0) and COL_WHITE or COL_CORE
             core.Radius = 8 + (i % 2) * 5
@@ -209,10 +185,8 @@ do
         end
         title.Color = COL_CORE
         core.Transparency = 0.15
-
         task.wait(0.35)
 
-        -- Phase 6: Spark burst + fade all
         for _, s in ipairs(sparks) do
             s.draw.Visible = true
             s.draw.Position = Vector2.new(cx, cy)
@@ -221,23 +195,16 @@ do
 
         for frame = 1, 26 do
             local t = frame / 26
-
             title.Transparency = t
             sub.Transparency = t
             credit.Transparency = t
             underline.Transparency = t
             core.Transparency = 0.15 + t * 0.85
             core.Radius = 8 + t * 30
-
-            for _, ring in ipairs(rings) do
-                ring.Transparency = 1
-            end
-            for _, o in ipairs(orbiters) do
-                o.draw.Transparency = 1
-            end
+            for _, ring in ipairs(rings) do ring.Transparency = 1 end
+            for _, o in ipairs(orbiters) do o.draw.Transparency = 1 end
             beamL.Transparency = 1
             beamR.Transparency = 1
-
             for _, s in ipairs(sparks) do
                 local p = s.draw.Position
                 s.draw.Position = Vector2.new(p.X + s.vx, p.Y + s.vy)
@@ -245,11 +212,9 @@ do
                 s.vx = s.vx * 0.96
                 s.vy = s.vy * 0.96
             end
-
             task.wait(0.016)
         end
 
-        -- Cleanup
         core:Remove()
         title:Remove()
         sub:Remove()
@@ -293,6 +258,7 @@ local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
+local CoreGui = game:GetService("CoreGui")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -306,23 +272,16 @@ getgenv().Oridium = getgenv().Oridium or {
 -- ==================== WELCOME NOTIFY + AUDIO ====================
 local function playWelcome()
     Library:Notify("Thank You For Executing Oridium Interface", 5)
-
     pcall(function()
         local sound = Instance.new("Sound")
         sound.SoundId = "rbxassetid://4590657391"
         sound.Volume = 0.7
-        sound.PlaybackSpeed = 1
         sound.Parent = SoundService
         sound:Play()
-        sound.Ended:Connect(function()
-            sound:Destroy()
-        end)
-        task.delay(6, function()
-            if sound then pcall(function() sound:Destroy() end) end
-        end)
+        sound.Ended:Connect(function() sound:Destroy() end)
+        task.delay(6, function() if sound then pcall(function() sound:Destroy() end) end end)
     end)
 end
-
 task.defer(playWelcome)
 
 local function isValidTarget(player)
@@ -334,28 +293,18 @@ end
 
 -- ==================== DA HOOD CHECK ====================
 local DA_HOOD_PLACE_IDS = {
-    [2788229376] = true,
-    [7213786345] = true,
-    [9825515356] = true,
-    [1008451066] = true,
-    [5602055394] = true,
-    [9183933413] = true,
+    [2788229376] = true, [7213786345] = true, [9825515356] = true,
+    [1008451066] = true, [5602055394] = true, [9183933413] = true,
 }
 
 local function isDaHood()
-    if DA_HOOD_PLACE_IDS[game.PlaceId] then
-        return true
-    end
+    if DA_HOOD_PLACE_IDS[game.PlaceId] then return true end
     local ok, name = pcall(function()
         return string.lower(tostring(game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or ""))
     end)
-    if ok and name and (string.find(name, "da hood") or string.find(name, "dahood")) then
-        return true
-    end
+    if ok and name and (string.find(name, "da hood") or string.find(name, "dahood")) then return true end
     local found = false
-    pcall(function()
-        found = game:GetService("ReplicatedStorage"):FindFirstChild("MainEvent") ~= nil
-    end)
+    pcall(function() found = game:GetService("ReplicatedStorage"):FindFirstChild("MainEvent") ~= nil end)
     return found
 end
 
@@ -365,7 +314,6 @@ local ON_DA_HOOD = isDaHood()
 local function getClosestSilentTarget()
     local closest, shortest = nil, math.huge
     local mousePos = UserInputService:GetMouseLocation()
-
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and isValidTarget(player) then
             local head = player.Character.Head
@@ -387,25 +335,19 @@ if ON_DA_HOOD then
         local mt = getrawmetatable(game)
         local oldNamecall = mt.__namecall
         setreadonly(mt, false)
-
         mt.__namecall = newcclosure(function(self, ...)
             local method = getnamecallmethod()
             local args = {...}
-
             if getgenv().Oridium.SilentAim and getgenv().Oridium.SilentTarget then
                 local target = getgenv().Oridium.SilentTarget
-
                 if method == "FireServer" and tostring(self.Name) == "MainEvent" then
                     if args[1] == "Shoot" or args[1] == "ShootGun" or args[1] == "MousePos" then
                         for i = 2, #args do
-                            if typeof(args[i]) == "Vector3" then
-                                args[i] = target.Position
-                            end
+                            if typeof(args[i]) == "Vector3" then args[i] = target.Position end
                         end
                         return oldNamecall(self, unpack(args))
                     end
                 end
-
                 if method == "Raycast" and self == workspace then
                     local origin = args[1]
                     if typeof(origin) == "Vector3" then
@@ -414,10 +356,8 @@ if ON_DA_HOOD then
                     end
                 end
             end
-
             return oldNamecall(self, ...)
         end)
-
         setreadonly(mt, true)
     end)
 
@@ -439,7 +379,6 @@ local function applyJumpPower()
     if not char then return end
     local hum = char:FindFirstChildOfClass("Humanoid")
     if not hum then return end
-
     if highJumpEnabled then
         hum.UseJumpPower = true
         hum.JumpPower = jumpPowerValue
@@ -458,23 +397,13 @@ end)
 MovementBox:AddToggle('HighJump', {
     Text = 'High Jump',
     Default = false,
-    Callback = function(v)
-        highJumpEnabled = v
-        applyJumpPower()
-    end
+    Callback = function(v) highJumpEnabled = v applyJumpPower() end
 })
 
 MovementBox:AddSlider('JumpPower', {
     Text = 'Jump Power',
-    Default = 100,
-    Min = 50,
-    Max = 300,
-    Rounding = 0,
-    Suffix = ' JP',
-    Callback = function(v)
-        jumpPowerValue = v
-        if highJumpEnabled then applyJumpPower() end
-    end
+    Default = 100, Min = 50, Max = 300, Rounding = 0, Suffix = ' JP',
+    Callback = function(v) jumpPowerValue = v if highJumpEnabled then applyJumpPower() end end
 })
 
 -- ==================== ANTI DETECTION ====================
@@ -550,7 +479,6 @@ end
 local function getClosestPlayer()
     local closest, shortest = nil, math.huge
     if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return nil end
-
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and isValidTarget(player) then
             local head = player.Character.Head
@@ -576,18 +504,9 @@ CombatBox:AddToggle('Aimbot', {
     Callback = function(v)
         aimbotEnabled = v
         FOVCircle.Visible = v
-        if not v then
-            SnapLine.Visible = false
-            HeadDot.Visible = false
-            currentTarget = nil
-        end
+        if not v then SnapLine.Visible = false HeadDot.Visible = false currentTarget = nil end
     end
-}):AddKeyPicker('AimbotKey', {
-    Default = 'Q',
-    SyncToggleState = true,
-    Mode = 'Toggle',
-    Text = 'Aimbot',
-})
+}):AddKeyPicker('AimbotKey', { Default = 'Q', SyncToggleState = true, Mode = 'Toggle', Text = 'Aimbot' })
 
 CombatBox:AddToggle('SilentAim', {
     Text = 'Silent Aim (Da Hood Only)',
@@ -626,10 +545,7 @@ local function equipWeapon()
     if not hum then return end
     for _, name in ipairs(weaponNames) do
         local tool = char:FindFirstChild(name) or LocalPlayer.Backpack:FindFirstChild(name)
-        if tool and tool:IsA("Tool") then
-            hum:EquipTool(tool)
-            return
-        end
+        if tool and tool:IsA("Tool") then hum:EquipTool(tool) return end
     end
 end
 
@@ -663,22 +579,13 @@ end
 TriggerBox:AddToggle('Triggerbot', {
     Text = 'Triggerbot',
     Default = false,
-    Callback = function(v)
-        triggerbotEnabled = v
-        TriggerFOVCircle.Visible = v
-    end
+    Callback = function(v) triggerbotEnabled = v TriggerFOVCircle.Visible = v end
 })
 
 TriggerBox:AddSlider('TriggerFOV', {
     Text = 'Trigger FOV',
-    Default = 70,
-    Min = 20,
-    Max = 150,
-    Rounding = 0,
-    Callback = function(v)
-        triggerFOV = v
-        TriggerFOVCircle.Radius = v
-    end
+    Default = 70, Min = 20, Max = 150, Rounding = 0,
+    Callback = function(v) triggerFOV = v TriggerFOVCircle.Radius = v end
 })
 
 -- ==================== ESP ====================
@@ -749,7 +656,6 @@ local function updateESP(player)
     data.HealthBG.Size = Vector2.new(2, height)
     data.HealthBG.Position = Vector2.new(barX, topS.Y)
     data.HealthBG.Visible = true
-
     data.HealthBar.Size = Vector2.new(2, height * hp)
     data.HealthBar.Position = Vector2.new(barX, topS.Y + height * (1 - hp))
     data.HealthBar.Color = Color3.fromRGB(255 * (1 - hp), 255 * hp, 0)
@@ -766,22 +672,304 @@ VisualsBox:AddToggle('ESP', {
     Default = false,
     Callback = function(v)
         espEnabled = v
-        if not v then
-            for p in pairs(Cache) do hideESP(p) end
-        end
+        if not v then for p in pairs(Cache) do hideESP(p) end end
     end
-}):AddKeyPicker('ESPKey', {
-    Default = 'M',
-    SyncToggleState = true,
-    Mode = 'Toggle',
-    Text = 'ESP',
-})
+}):AddKeyPicker('ESPKey', { Default = 'M', SyncToggleState = true, Mode = 'Toggle', Text = 'ESP' })
 
 VisualsBox:AddLabel('ESP Color'):AddColorPicker('ESPColor', {
     Default = Color3.fromRGB(255, 255, 255),
     Callback = function(v)
         ESP_SETTINGS.BoxColor = v
         ESP_SETTINGS.TextColor = v
+    end
+})
+
+-- ==================== ESP PREVIEW PANEL (Linoria-styled) ====================
+local espPreviewEnabled = false
+
+local PREVIEW = {
+    MainColor = Color3.fromRGB(28, 28, 28),
+    BackgroundColor = Color3.fromRGB(20, 20, 20),
+    AccentColor = Color3.fromRGB(100, 180, 255),
+    OutlineColor = Color3.fromRGB(50, 50, 50),
+    FontColor = Color3.fromRGB(255, 255, 255),
+    DimColor = Color3.fromRGB(160, 160, 160),
+}
+
+local PreviewGui = Instance.new("ScreenGui")
+PreviewGui.Name = "OridiumESPPreview"
+PreviewGui.ResetOnSpawn = false
+PreviewGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+pcall(function() PreviewGui.Parent = gethui and gethui() or CoreGui end)
+if not PreviewGui.Parent then PreviewGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+-- Outer (black border like Linoria)
+local Outer = Instance.new("Frame")
+Outer.Name = "Outer"
+Outer.BackgroundColor3 = Color3.new(0, 0, 0)
+Outer.BorderSizePixel = 0
+Outer.Position = UDim2.new(0.5, 290, 0.5, -200)
+Outer.Size = UDim2.new(0, 220, 0, 400)
+Outer.Visible = false
+Outer.Parent = PreviewGui
+
+local OuterCorner = Instance.new("UICorner")
+OuterCorner.CornerRadius = UDim.new(0, 2)
+OuterCorner.Parent = Outer
+
+-- Inner (MainColor + Outline)
+local Inner = Instance.new("Frame")
+Inner.Name = "Inner"
+Inner.BackgroundColor3 = PREVIEW.MainColor
+Inner.BorderColor3 = PREVIEW.OutlineColor
+Inner.BorderMode = Enum.BorderMode.Inset
+Inner.BorderSizePixel = 1
+Inner.Size = UDim2.new(1, 0, 1, 0)
+Inner.Parent = Outer
+
+-- Accent bar top
+local AccentBar = Instance.new("Frame")
+AccentBar.Name = "Accent"
+AccentBar.BackgroundColor3 = PREVIEW.AccentColor
+AccentBar.BorderSizePixel = 0
+AccentBar.Size = UDim2.new(1, 0, 0, 2)
+AccentBar.Parent = Inner
+
+-- Title
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Name = "Title"
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Position = UDim2.new(0, 8, 0, 6)
+TitleLabel.Size = UDim2.new(1, -16, 0, 20)
+TitleLabel.Font = Enum.Font.Code
+TitleLabel.Text = "ESP Preview"
+TitleLabel.TextColor3 = PREVIEW.FontColor
+TitleLabel.TextSize = 14
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = Inner
+
+-- Divider
+local Divider = Instance.new("Frame")
+Divider.BackgroundColor3 = PREVIEW.OutlineColor
+Divider.BorderSizePixel = 0
+Divider.Position = UDim2.new(0, 6, 0, 28)
+Divider.Size = UDim2.new(1, -12, 0, 1)
+Divider.Parent = Inner
+
+-- Scroll list
+local List = Instance.new("ScrollingFrame")
+List.Name = "List"
+List.BackgroundColor3 = PREVIEW.BackgroundColor
+List.BorderColor3 = PREVIEW.OutlineColor
+List.BorderSizePixel = 1
+List.Position = UDim2.new(0, 6, 0, 34)
+List.Size = UDim2.new(1, -12, 1, -42)
+List.ScrollBarThickness = 3
+List.ScrollBarImageColor3 = PREVIEW.AccentColor
+List.CanvasSize = UDim2.new(0, 0, 0, 0)
+List.AutomaticCanvasSize = Enum.AutomaticSize.Y
+List.Parent = Inner
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 4)
+ListLayout.Parent = List
+
+local ListPad = Instance.new("UIPadding")
+ListPad.PaddingTop = UDim.new(0, 4)
+ListPad.PaddingBottom = UDim.new(0, 4)
+ListPad.PaddingLeft = UDim.new(0, 4)
+ListPad.PaddingRight = UDim.new(0, 4)
+ListPad.Parent = List
+
+local PreviewCards = {} -- [player] = frame
+
+local function makeHologram(parent)
+    -- Mini player silhouette (Linoria-dark hologram)
+    local holo = Instance.new("Frame")
+    holo.Name = "Holo"
+    holo.BackgroundTransparency = 1
+    holo.Size = UDim2.new(0, 28, 0, 48)
+    holo.Parent = parent
+
+    local head = Instance.new("Frame")
+    head.BackgroundColor3 = PREVIEW.AccentColor
+    head.BackgroundTransparency = 0.35
+    head.BorderSizePixel = 0
+    head.Position = UDim2.new(0.5, -6, 0, 2)
+    head.Size = UDim2.new(0, 12, 0, 12)
+    head.Parent = holo
+    local hc = Instance.new("UICorner")
+    hc.CornerRadius = UDim.new(1, 0)
+    hc.Parent = head
+
+    local body = Instance.new("Frame")
+    body.BackgroundColor3 = PREVIEW.AccentColor
+    body.BackgroundTransparency = 0.45
+    body.BorderSizePixel = 0
+    body.Position = UDim2.new(0.5, -7, 0, 15)
+    body.Size = UDim2.new(0, 14, 0, 18)
+    body.Parent = holo
+
+    local legL = Instance.new("Frame")
+    legL.BackgroundColor3 = PREVIEW.AccentColor
+    legL.BackgroundTransparency = 0.5
+    legL.BorderSizePixel = 0
+    legL.Position = UDim2.new(0.5, -7, 0, 34)
+    legL.Size = UDim2.new(0, 5, 0, 12)
+    legL.Parent = holo
+
+    local legR = Instance.new("Frame")
+    legR.BackgroundColor3 = PREVIEW.AccentColor
+    legR.BackgroundTransparency = 0.5
+    legR.BorderSizePixel = 0
+    legR.Position = UDim2.new(0.5, 2, 0, 34)
+    legR.Size = UDim2.new(0, 5, 0, 12)
+    legR.Parent = holo
+
+    local armL = Instance.new("Frame")
+    armL.BackgroundColor3 = PREVIEW.AccentColor
+    armL.BackgroundTransparency = 0.5
+    armL.BorderSizePixel = 0
+    armL.Position = UDim2.new(0.5, -12, 0, 16)
+    armL.Size = UDim2.new(0, 4, 0, 12)
+    armL.Parent = holo
+
+    local armR = Instance.new("Frame")
+    armR.BackgroundColor3 = PREVIEW.AccentColor
+    armR.BackgroundTransparency = 0.5
+    armR.BorderSizePixel = 0
+    armR.Position = UDim2.new(0.5, 8, 0, 16)
+    armR.Size = UDim2.new(0, 4, 0, 12)
+    armR.Parent = holo
+
+    return holo
+end
+
+local function createPreviewCard(player)
+    if PreviewCards[player] then return end
+
+    local card = Instance.new("Frame")
+    card.Name = player.Name
+    card.BackgroundColor3 = PREVIEW.MainColor
+    card.BorderColor3 = PREVIEW.OutlineColor
+    card.BorderSizePixel = 1
+    card.Size = UDim2.new(1, -4, 0, 56)
+    card.Parent = List
+
+    local accent = Instance.new("Frame")
+    accent.BackgroundColor3 = PREVIEW.AccentColor
+    accent.BorderSizePixel = 0
+    accent.Size = UDim2.new(0, 2, 1, 0)
+    accent.Parent = card
+
+    local holo = makeHologram(card)
+    holo.Position = UDim2.new(0, 8, 0.5, -24)
+
+    local nameLbl = Instance.new("TextLabel")
+    nameLbl.Name = "Name"
+    nameLbl.BackgroundTransparency = 1
+    nameLbl.Position = UDim2.new(0, 42, 0, 6)
+    nameLbl.Size = UDim2.new(1, -50, 0, 16)
+    nameLbl.Font = Enum.Font.Code
+    nameLbl.Text = player.Name
+    nameLbl.TextColor3 = PREVIEW.FontColor
+    nameLbl.TextSize = 13
+    nameLbl.TextXAlignment = Enum.TextXAlignment.Left
+    nameLbl.TextTruncate = Enum.TextTruncate.AtEnd
+    nameLbl.Parent = card
+
+    local distLbl = Instance.new("TextLabel")
+    distLbl.Name = "Dist"
+    distLbl.BackgroundTransparency = 1
+    distLbl.Position = UDim2.new(0, 42, 0, 22)
+    distLbl.Size = UDim2.new(1, -50, 0, 14)
+    distLbl.Font = Enum.Font.Code
+    distLbl.Text = "-- studs"
+    distLbl.TextColor3 = PREVIEW.DimColor
+    distLbl.TextSize = 11
+    distLbl.TextXAlignment = Enum.TextXAlignment.Left
+    distLbl.Parent = card
+
+    -- Health bar bg
+    local hpBG = Instance.new("Frame")
+    hpBG.Name = "HpBG"
+    hpBG.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    hpBG.BorderSizePixel = 0
+    hpBG.Position = UDim2.new(0, 42, 0, 40)
+    hpBG.Size = UDim2.new(1, -54, 0, 6)
+    hpBG.Parent = card
+
+    local hpBar = Instance.new("Frame")
+    hpBar.Name = "HpBar"
+    hpBar.BackgroundColor3 = Color3.fromRGB(80, 220, 100)
+    hpBar.BorderSizePixel = 0
+    hpBar.Size = UDim2.new(1, 0, 1, 0)
+    hpBar.Parent = hpBG
+
+    PreviewCards[player] = {
+        Card = card,
+        Name = nameLbl,
+        Dist = distLbl,
+        HpBar = hpBar,
+        Accent = accent,
+    }
+end
+
+local function removePreviewCard(player)
+    local data = PreviewCards[player]
+    if data then
+        pcall(function() data.Card:Destroy() end)
+        PreviewCards[player] = nil
+    end
+end
+
+local function updatePreviewCard(player)
+    local data = PreviewCards[player]
+    if not data then return end
+
+    if not isValidTarget(player) then
+        data.Card.Visible = false
+        return
+    end
+
+    data.Card.Visible = true
+    data.Name.Text = player.DisplayName ~= player.Name and (player.DisplayName .. " (@" .. player.Name .. ")") or player.Name
+
+    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    local dist = 0
+    if hrp and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        dist = (hrp.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+    end
+    data.Dist.Text = math.floor(dist) .. " studs"
+
+    if hum then
+        local hp = math.clamp(hum.Health / math.max(hum.MaxHealth, 1), 0, 1)
+        data.HpBar.Size = UDim2.new(hp, 0, 1, 0)
+        data.HpBar.BackgroundColor3 = Color3.fromRGB(255 * (1 - hp), 220 * hp, 40)
+        data.Accent.BackgroundColor3 = hp > 0.3 and PREVIEW.AccentColor or Color3.fromRGB(220, 60, 60)
+    end
+end
+
+local function refreshPreviewList()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then
+            createPreviewCard(p)
+        end
+    end
+end
+
+VisualsBox:AddToggle('ESPPreview', {
+    Text = 'ESP Preview',
+    Default = false,
+    Tooltip = 'Linoria-styled panel showing player holograms',
+    Callback = function(v)
+        espPreviewEnabled = v
+        Outer.Visible = v
+        if v then
+            refreshPreviewList()
+        end
     end
 })
 
@@ -808,20 +996,11 @@ end
 local function updateOridiumLine(player)
     local line = OridiumLines[player]
     if not line then return end
-    if not isValidTarget(player) then
-        line.Visible = false
-        return
-    end
-
+    if not isValidTarget(player) then line.Visible = false return end
     local head = player.Character.Head
     local sp, onScreen = Camera:WorldToViewportPoint(head.Position)
-    if not onScreen then
-        line.Visible = false
-        return
-    end
-
-    local from = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-    line.From = from
+    if not onScreen then line.Visible = false return end
+    line.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
     line.To = Vector2.new(sp.X, sp.Y)
     line.Color = lightBlue
     line.Visible = true
@@ -833,11 +1012,7 @@ VisualsBox:AddToggle('OridiumLines', {
     Tooltip = 'Tracers from bottom of screen to players',
     Callback = function(v)
         oridiumLinesEnabled = v
-        if not v then
-            for _, line in pairs(OridiumLines) do
-                line.Visible = false
-            end
-        end
+        if not v then for _, line in pairs(OridiumLines) do line.Visible = false end end
     end
 })
 
@@ -892,12 +1067,14 @@ local function onPlayerAdded(player)
     createESP(player)
     createAimviewer(player)
     createOridiumLine(player)
+    if espPreviewEnabled then createPreviewCard(player) end
 end
 
 local function onPlayerRemoving(player)
     removeESP(player)
     removeAimviewer(player)
     removeOridiumLine(player)
+    removePreviewCard(player)
 end
 
 for _, p in ipairs(Players:GetPlayers()) do onPlayerAdded(p) end
@@ -907,7 +1084,6 @@ Players.PlayerRemoving:Connect(onPlayerRemoving)
 -- ==================== MAIN LOOP ====================
 RunService.RenderStepped:Connect(function()
     local now = tick()
-
     updateFOVCircle()
 
     if triggerbotEnabled then
@@ -939,21 +1115,19 @@ RunService.RenderStepped:Connect(function()
     end
 
     if espEnabled then
-        for player in pairs(Cache) do
-            pcall(updateESP, player)
-        end
+        for player in pairs(Cache) do pcall(updateESP, player) end
     end
 
     if aimviewerEnabled then
-        for player in pairs(AimviewerCache) do
-            pcall(updateAimviewer, player)
-        end
+        for player in pairs(AimviewerCache) do pcall(updateAimviewer, player) end
     end
 
     if oridiumLinesEnabled then
-        for player in pairs(OridiumLines) do
-            pcall(updateOridiumLine, player)
-        end
+        for player in pairs(OridiumLines) do pcall(updateOridiumLine, player) end
+    end
+
+    if espPreviewEnabled then
+        for player in pairs(PreviewCards) do pcall(updatePreviewCard, player) end
     end
 end)
 
@@ -979,6 +1153,8 @@ MenuGroup:AddToggle('RGBMode', {
         if not Value then
             Library.AccentColor = Color3.fromRGB(100, 180, 255)
             Library.AccentColorDark = Color3.fromRGB(60, 120, 180)
+            PREVIEW.AccentColor = Color3.fromRGB(100, 180, 255)
+            AccentBar.BackgroundColor3 = PREVIEW.AccentColor
             if Library.UpdateColorsUsingRegistry then
                 pcall(function() Library:UpdateColorsUsingRegistry() end)
             end
@@ -993,6 +1169,10 @@ task.spawn(function()
             local color = Color3.fromHSV(hue, 1, 1)
             Library.AccentColor = color
             Library.AccentColorDark = color:Lerp(Color3.new(0, 0, 0), 0.35)
+            PREVIEW.AccentColor = color
+            if Outer.Visible then
+                AccentBar.BackgroundColor3 = color
+            end
             if Library.UpdateColorsUsingRegistry then
                 pcall(function() Library:UpdateColorsUsingRegistry() end)
             end
@@ -1020,6 +1200,7 @@ Library:OnUnload(function()
         end
         for _, line in pairs(AimviewerCache) do line:Remove() end
         for _, line in pairs(OridiumLines) do line:Remove() end
+        if PreviewGui then PreviewGui:Destroy() end
     end)
 end)
 
