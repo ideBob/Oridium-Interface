@@ -1,13 +1,28 @@
 -- ============================================================
 -- Oridium Interface
 -- Made by @cuakieffer
--- Optimized: state, connections, nil-safety, hot-path caching
+-- UI: Neverlose-style library (migrated from Linoria)
 -- ============================================================
 
-local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
-local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
-local ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua'))()
-local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ImInsane-1337/neverlose-ui/refs/heads/main/source/library.lua"))()
+
+Library.Folders = {
+    Directory = "OridiumInterface",
+    Configs = "OridiumInterface/Configs",
+    Assets = "OridiumInterface/Assets",
+}
+
+local ACCENT = Color3.fromRGB(100, 180, 255)
+local ACCENT_GRAD = Color3.fromRGB(40, 100, 180)
+Library.Theme.Accent = ACCENT
+Library.Theme.AccentGradient = ACCENT_GRAD
+pcall(function()
+    Library:ChangeTheme("Accent", ACCENT)
+    Library:ChangeTheme("AccentGradient", ACCENT_GRAD)
+end)
+
+Library.MenuKeybind = tostring(Enum.KeyCode.End)
+Library.LogsEnabled = true
 
 -- ==================== SERVICES ====================
 local Players = game:GetService("Players")
@@ -22,7 +37,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- ==================== SHARED STATE ====================
+-- ==================== STATE ====================
 getgenv().Oridium = getgenv().Oridium or {
     SilentAim = false,
     SilentTarget = nil,
@@ -51,65 +66,40 @@ local State = {
 
 local Connections = {}
 local function bind(name, conn)
-    if Connections[name] then
-        Connections[name]:Disconnect()
-    end
+    if Connections[name] then Connections[name]:Disconnect() end
     Connections[name] = conn
     return conn
 end
-
 local function unbind(name)
-    local c = Connections[name]
-    if c then
-        c:Disconnect()
-        Connections[name] = nil
-    end
+    if Connections[name] then Connections[name]:Disconnect() Connections[name] = nil end
 end
-
 local function unbindAll()
-    for name, c in pairs(Connections) do
-        pcall(function() c:Disconnect() end)
-        Connections[name] = nil
-    end
+    for n, c in pairs(Connections) do pcall(function() c:Disconnect() end) Connections[n] = nil end
 end
 
--- Local character cache (refreshed on respawn)
+-- Local character cache
 local LocalChar, LocalHum, LocalHRP
-
 local function refreshLocalCharacter(char)
     LocalChar = char
-    LocalHum = nil
-    LocalHRP = nil
-    if not char then return end
-    LocalHum = char:FindFirstChildOfClass("Humanoid")
-    LocalHRP = char:FindFirstChild("HumanoidRootPart")
+    LocalHum = char and char:FindFirstChildOfClass("Humanoid") or nil
+    LocalHRP = char and char:FindFirstChild("HumanoidRootPart") or nil
 end
-
-if LocalPlayer.Character then
-    refreshLocalCharacter(LocalPlayer.Character)
-end
+if LocalPlayer.Character then refreshLocalCharacter(LocalPlayer.Character) end
 
 bind("LocalCharacterAdded", LocalPlayer.CharacterAdded:Connect(function(char)
     task.wait(0.35)
     refreshLocalCharacter(char)
-    if State.HighJump then
-        -- applied later via applyJumpPower once defined; deferred call below
-        task.defer(function()
-            if State.HighJump and applyJumpPower then
-                applyJumpPower()
-            end
-        end)
-    end
+    task.defer(function()
+        if State.HighJump and applyJumpPower then applyJumpPower() end
+    end)
 end))
-
 bind("LocalCharacterRemoving", LocalPlayer.CharacterRemoving:Connect(function()
     LocalChar, LocalHum, LocalHRP = nil, nil, nil
 end))
 
--- Camera + viewport cache
+-- Camera / viewport cache
 local ViewportCenter = Vector2.new(0, 0)
 local ViewportBottom = Vector2.new(0, 0)
-
 local function refreshCamera()
     Camera = workspace.CurrentCamera
     if not Camera then return end
@@ -118,17 +108,16 @@ local function refreshCamera()
     ViewportBottom = Vector2.new(size.X * 0.5, size.Y)
 end
 refreshCamera()
-
 bind("CameraChanged", workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(refreshCamera))
 if Camera then
     bind("ViewportChanged", Camera:GetPropertyChangedSignal("ViewportSize"):Connect(refreshCamera))
 end
 
--- ==================== INTRO (unchanged visual behavior) ====================
+-- ==================== INTRO ====================
 do
-    local sw, sh = Camera and Camera.ViewportSize.X or 1920, Camera and Camera.ViewportSize.Y or 1080
+    local sw = Camera and Camera.ViewportSize.X or 1920
+    local sh = Camera and Camera.ViewportSize.Y or 1080
     local cx, cy = sw / 2, sh / 2
-
     local COL_CORE = Color3.fromRGB(90, 170, 255)
     local COL_GLOW = Color3.fromRGB(170, 220, 255)
     local COL_WHITE = Color3.fromRGB(255, 255, 255)
@@ -247,7 +236,6 @@ do
             core.Radius = 2 + t * 6
             task.wait(0.018)
         end
-
         for frame = 1, 36 do
             local t = frame / 36
             for ri, ring in ipairs(rings) do
@@ -265,7 +253,6 @@ do
             core.Radius = 8 + math.sin(t * math.pi * 3) * 2
             task.wait(0.016)
         end
-
         for i = 1, 14 do
             local t = i / 14
             beamL.Transparency = 1 - t
@@ -276,7 +263,6 @@ do
             beamR.To = Vector2.new(cx + t * (sw * 0.42), cy)
             task.wait(0.014)
         end
-
         for i = 1, 18 do
             local t = i / 18
             title.Transparency = 1 - t
@@ -291,7 +277,6 @@ do
             beamR.Transparency = math.clamp(beamR.Transparency + 0.05, 0, 1)
             task.wait(0.018)
         end
-
         for i = 1, 8 do
             title.Color = (i % 2 == 0) and COL_WHITE or COL_CORE
             core.Radius = 8 + (i % 2) * 5
@@ -301,13 +286,11 @@ do
         title.Color = COL_CORE
         core.Transparency = 0.15
         task.wait(0.35)
-
         for _, s in ipairs(sparks) do
             s.draw.Visible = true
             s.draw.Position = Vector2.new(cx, cy)
             s.draw.Transparency = 0
         end
-
         for frame = 1, 26 do
             local t = frame / 26
             title.Transparency = t
@@ -329,7 +312,6 @@ do
             end
             task.wait(0.016)
         end
-
         core:Remove()
         title:Remove()
         sub:Remove()
@@ -341,36 +323,52 @@ do
         for _, o in ipairs(orbiters) do o.draw:Remove() end
         for _, s in ipairs(sparks) do s.draw:Remove() end
     end)
-
     task.wait(3.2)
 end
 
--- ==================== WINDOW ====================
-local Window = Library:CreateWindow({
-    Title = 'Oridium Interface | by @cuakieffer',
-    Center = true,
-    AutoShow = true,
-    TabPadding = 8,
-    MenuFadeTime = 0.2
+-- ==================== WINDOW (Neverlose) ====================
+local Window = Library:Window({
+    Name = "Oridium Interface",
+    SubName = "by @cuakieffer",
+    Logo = "0",
 })
 
-local Tabs = {
-    Blatant         = Window:AddTab('Blatant'),
-    Visuals         = Window:AddTab('Visuals'),
-    Player          = Window:AddTab('Player'),
-    ['UI Settings'] = Window:AddTab('UI Settings'),
-}
+local KeybindList = Library:KeybindList("Keybinds")
+pcall(function()
+    Library:Watermark({ "Oridium Interface", "by @cuakieffer" })
+end)
 
-local CombatBox    = Tabs.Blatant:AddLeftGroupbox('Combat')
-local TriggerBox   = Tabs.Blatant:AddRightGroupbox('Triggerbot')
-local VisualsBox   = Tabs.Visuals:AddLeftGroupbox('ESP')
-local AimviewerBox = Tabs.Visuals:AddRightGroupbox('Aimviewer')
-local MovementBox  = Tabs.Player:AddLeftGroupbox('Movement')
-local AntiBox      = Tabs.Player:AddRightGroupbox('Anti Detection')
+Window:Category("Combat")
+local BlatantPage = Window:Page({ Name = "Blatant", Icon = "0" })
+local CombatSection = BlatantPage:Section({ Name = "Combat", Side = 1 })
+local TriggerSection = BlatantPage:Section({ Name = "Triggerbot", Side = 2 })
+
+Window:Category("Visuals")
+local VisualsPage = Window:Page({ Name = "Visuals", Icon = "0" })
+local ESPSection = VisualsPage:Section({ Name = "ESP", Side = 1 })
+local AimviewerSection = VisualsPage:Section({ Name = "Aimviewer", Side = 2 })
+
+Window:Category("Player")
+local PlayerPage = Window:Page({ Name = "Player", Icon = "0" })
+local MovementSection = PlayerPage:Section({ Name = "Movement", Side = 1 })
+local AntiSection = PlayerPage:Section({ Name = "Anti Detection", Side = 2 })
 
 -- ==================== WELCOME ====================
+local function notify(title, desc, duration)
+    pcall(function()
+        Library:Notification({
+            Title = title or "Oridium",
+            Description = desc or "",
+            Duration = duration or 4,
+        })
+    end)
+    pcall(function()
+        if Library.Log then Library:Log(desc or title, duration or 4, ACCENT) end
+    end)
+end
+
 task.defer(function()
-    Library:Notify("Thank You For Executing Oridium Interface", 5)
+    notify("Oridium", "Thank You For Executing Oridium Interface", 5)
     pcall(function()
         local sound = Instance.new("Sound")
         sound.SoundId = "rbxassetid://4590657391"
@@ -419,8 +417,7 @@ local function isDaHood()
     if ok and name and (string.find(name, "da hood", 1, true) or string.find(name, "dahood", 1, true)) then
         return true
     end
-    local mainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
-    return mainEvent ~= nil
+    return ReplicatedStorage:FindFirstChild("MainEvent") ~= nil
 end
 
 local ON_DA_HOOD = isDaHood()
@@ -429,7 +426,6 @@ local function getClosestSilentTarget()
     if not Camera then return nil end
     local closest, shortest = nil, 200
     local mousePos = UserInputService:GetMouseLocation()
-
     for _, player in ipairs(Players:GetPlayers()) do
         local _, head = getTargetParts(player)
         if head then
@@ -451,21 +447,16 @@ local function setSilentAim(enabled)
         getgenv().Oridium.SilentAim = false
         getgenv().Oridium.SilentTarget = nil
         unbind("SilentAimHeartbeat")
-        if enabled then
-            Library:Notify("Silent Aim only works on Da Hood", 3)
-        end
+        if enabled then notify("Silent Aim", "Only works on Da Hood", 3) end
         return
     end
-
     getgenv().Oridium.SilentAim = enabled
     if not enabled then
         getgenv().Oridium.SilentTarget = nil
         unbind("SilentAimHeartbeat")
         return
     end
-
     if Connections.SilentAimHeartbeat then return end
-
     bind("SilentAimHeartbeat", RunService.Heartbeat:Connect(function()
         if getgenv().Oridium.SilentAim then
             getgenv().Oridium.SilentTarget = getClosestSilentTarget()
@@ -483,7 +474,6 @@ if ON_DA_HOOD then
         mt.__namecall = newcclosure(function(self, ...)
             local method = getnamecallmethod()
             local args = { ... }
-
             if getgenv().Oridium.SilentAim then
                 local target = getgenv().Oridium.SilentTarget
                 if target and target.Parent then
@@ -491,9 +481,7 @@ if ON_DA_HOOD then
                         local action = args[1]
                         if action == "Shoot" or action == "ShootGun" or action == "MousePos" then
                             for i = 2, #args do
-                                if typeof(args[i]) == "Vector3" then
-                                    args[i] = target.Position
-                                end
+                                if typeof(args[i]) == "Vector3" then args[i] = target.Position end
                             end
                             return oldNamecall(self, unpack(args))
                         end
@@ -507,7 +495,6 @@ if ON_DA_HOOD then
                     end
                 end
             end
-
             return oldNamecall(self, ...)
         end)
         setreadonly(mt, true)
@@ -516,12 +503,9 @@ end
 
 -- ==================== HIGH JUMP ====================
 function applyJumpPower()
-    if not LocalChar then
-        refreshLocalCharacter(LocalPlayer.Character)
-    end
+    if not LocalChar then refreshLocalCharacter(LocalPlayer.Character) end
     local hum = LocalHum or (LocalChar and LocalChar:FindFirstChildOfClass("Humanoid"))
     if not hum then return end
-
     if State.HighJump then
         hum.UseJumpPower = true
         hum.JumpPower = State.JumpPower
@@ -532,8 +516,9 @@ function applyJumpPower()
     end
 end
 
-MovementBox:AddToggle('HighJump', {
-    Text = 'High Jump',
+MovementSection:Toggle({
+    Name = "High Jump",
+    Flag = "HighJump",
     Default = false,
     Callback = function(v)
         State.HighJump = v
@@ -541,9 +526,14 @@ MovementBox:AddToggle('HighJump', {
     end
 })
 
-MovementBox:AddSlider('JumpPower', {
-    Text = 'Jump Power',
-    Default = 100, Min = 50, Max = 300, Rounding = 0, Suffix = ' JP',
+MovementSection:Slider({
+    Name = "Jump Power",
+    Flag = "JumpPower",
+    Min = 50,
+    Max = 300,
+    Default = 100,
+    Decimals = 0,
+    Suffix = " JP",
     Callback = function(v)
         State.JumpPower = v
         if State.HighJump then applyJumpPower() end
@@ -551,10 +541,10 @@ MovementBox:AddSlider('JumpPower', {
 })
 
 -- ==================== ANTI DETECTION ====================
-AntiBox:AddToggle('AntiDetection', {
-    Text = 'Anti Detection',
+AntiSection:Toggle({
+    Name = "Anti Detection",
+    Flag = "AntiDetection",
     Default = false,
-    Tooltip = 'Spoofs JumpPower & WalkSpeed',
     Callback = function(v)
         State.AntiDetection = v
         getgenv().Oridium.AntiDetection = v
@@ -575,7 +565,7 @@ pcall(function()
     end))
 end)
 
--- ==================== AIMBOT DRAWINGS ====================
+-- ==================== AIMBOT ====================
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Color = lightBlue
 FOVCircle.Thickness = 2
@@ -604,11 +594,9 @@ end
 
 local function getClosestPlayer()
     if not Camera or not LocalHRP then return nil end
-
     local closest, shortest = nil, State.AimbotRange
     local fovRadius = State.AimbotFOV * 0.5
     local origin = LocalHRP.Position
-
     for _, player in ipairs(Players:GetPlayers()) do
         local _, head, _, hrp = getTargetParts(player)
         if head then
@@ -628,8 +616,9 @@ local function getClosestPlayer()
     return closest
 end
 
-CombatBox:AddToggle('Aimbot', {
-    Text = 'Aimbot',
+local AimbotToggle = CombatSection:Toggle({
+    Name = "Aimbot",
+    Flag = "Aimbot",
     Default = false,
     Callback = function(v)
         State.Aimbot = v
@@ -639,12 +628,24 @@ CombatBox:AddToggle('Aimbot', {
             State.CurrentTarget = nil
         end
     end
-}):AddKeyPicker('AimbotKey', { Default = 'Q', SyncToggleState = true, Mode = 'Toggle', Text = 'Aimbot' })
+})
 
-CombatBox:AddToggle('SilentAim', {
-    Text = 'Silent Aim (Da Hood Only)',
+pcall(function()
+    AimbotToggle:Keybind({
+        Name = "Aimbot Key",
+        Flag = "AimbotKey",
+        Default = Enum.KeyCode.Q,
+        Mode = "Toggle",
+        Callback = function()
+            -- Mode Toggle syncs via library when supported
+        end
+    })
+end)
+
+CombatSection:Toggle({
+    Name = "Silent Aim (Da Hood Only)",
+    Flag = "SilentAim",
     Default = false,
-    Tooltip = ON_DA_HOOD and 'Works on this Da Hood place' or 'Not Da Hood — silent aim disabled',
     Callback = function(v)
         setSilentAim(v)
     end
@@ -666,7 +667,6 @@ local function equipWeapon()
     if not char then return end
     local hum = LocalHum or char:FindFirstChildOfClass("Humanoid")
     if not hum then return end
-
     for i = 1, #weaponNames do
         local name = weaponNames[i]
         local tool = char:FindFirstChild(name) or LocalPlayer.Backpack:FindFirstChild(name)
@@ -678,7 +678,6 @@ local function equipWeapon()
 end
 
 local function simulateClick()
-    -- Yield outside the render callback
     task.spawn(function()
         pcall(function()
             VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
@@ -692,7 +691,6 @@ local function getPlayerInMouseFOV()
     if not Camera then return nil end
     local mousePos = UserInputService:GetMouseLocation()
     local closest, closestDist = nil, State.TriggerFOV
-
     for _, player in ipairs(Players:GetPlayers()) do
         local _, head = getTargetParts(player)
         if head then
@@ -709,8 +707,9 @@ local function getPlayerInMouseFOV()
     return closest
 end
 
-TriggerBox:AddToggle('Triggerbot', {
-    Text = 'Triggerbot',
+TriggerSection:Toggle({
+    Name = "Triggerbot",
+    Flag = "Triggerbot",
     Default = false,
     Callback = function(v)
         State.Triggerbot = v
@@ -718,9 +717,13 @@ TriggerBox:AddToggle('Triggerbot', {
     end
 })
 
-TriggerBox:AddSlider('TriggerFOV', {
-    Text = 'Trigger FOV',
-    Default = 70, Min = 20, Max = 150, Rounding = 0,
+TriggerSection:Slider({
+    Name = "Trigger FOV",
+    Flag = "TriggerFOV",
+    Min = 20,
+    Max = 150,
+    Default = 70,
+    Decimals = 0,
     Callback = function(v)
         State.TriggerFOV = v
         TriggerFOVCircle.Radius = v
@@ -732,15 +735,13 @@ local ESP_SETTINGS = {
     BoxColor = Color3.fromRGB(255, 255, 255),
     TextColor = Color3.fromRGB(255, 255, 255),
     BoxWidth = 10,
-    MaxDistance = 2000
+    MaxDistance = 2000,
 }
 local Cache = {}
 
 local function newDrawing(class, props)
     local d = Drawing.new(class)
-    for k, v in pairs(props) do
-        d[k] = v
-    end
+    for k, v in pairs(props) do d[k] = v end
     return d
 end
 
@@ -757,9 +758,7 @@ end
 local function removeESP(player)
     local data = Cache[player]
     if not data then return end
-    for _, obj in pairs(data) do
-        pcall(function() obj:Remove() end)
-    end
+    for _, obj in pairs(data) do pcall(function() obj:Remove() end) end
     Cache[player] = nil
 end
 
@@ -775,37 +774,22 @@ end
 local function updateESP(player)
     local data = Cache[player]
     if not data or not Camera then return end
-
     local char, head, hum, hrp = getTargetParts(player)
-    if not char then
-        hideESP(player)
-        return
-    end
-
+    if not char then hideESP(player) return end
     local dist = (Camera.CFrame.Position - hrp.Position).Magnitude
-    if dist > ESP_SETTINGS.MaxDistance then
-        hideESP(player)
-        return
-    end
-
+    if dist > ESP_SETTINGS.MaxDistance then hideESP(player) return end
     local top = head.Position + Vector3.new(0, 0.5, 0)
     local bottom = hrp.Position - Vector3.new(0, 3, 0)
     local topS, topV = Camera:WorldToViewportPoint(top)
     local botS, botV = Camera:WorldToViewportPoint(bottom)
-    if not (topV and botV) then
-        hideESP(player)
-        return
-    end
-
+    if not (topV and botV) then hideESP(player) return end
     local height = math.abs(botS.Y - topS.Y)
     local centerX = (topS.X + botS.X) * 0.5
     local width = ESP_SETTINGS.BoxWidth
-
     data.Box.Size = Vector2.new(width, height)
     data.Box.Position = Vector2.new(centerX - width * 0.5, topS.Y)
     data.Box.Color = ESP_SETTINGS.BoxColor
     data.Box.Visible = true
-
     local hp = math.clamp(hum.Health / math.max(hum.MaxHealth, 1), 0, 1)
     local barX = centerX - width * 0.5 - 5
     data.HealthBG.Size = Vector2.new(2, height)
@@ -815,37 +799,48 @@ local function updateESP(player)
     data.HealthBar.Position = Vector2.new(barX, topS.Y + height * (1 - hp))
     data.HealthBar.Color = Color3.fromRGB(255 * (1 - hp), 255 * hp, 0)
     data.HealthBar.Visible = true
-
     data.Distance.Text = math.floor(dist) .. " studs"
     data.Distance.Position = Vector2.new(centerX, botS.Y + 2)
     data.Distance.Color = ESP_SETTINGS.TextColor
     data.Distance.Visible = true
 end
 
-VisualsBox:AddToggle('ESP', {
-    Text = 'ESP',
+local ESPToggle = ESPSection:Toggle({
+    Name = "ESP",
+    Flag = "ESP",
     Default = false,
     Callback = function(v)
         State.ESP = v
-        if not v then
-            for p in pairs(Cache) do hideESP(p) end
-        end
-    end
-}):AddKeyPicker('ESPKey', { Default = 'M', SyncToggleState = true, Mode = 'Toggle', Text = 'ESP' })
-
-VisualsBox:AddLabel('ESP Color'):AddColorPicker('ESPColor', {
-    Default = Color3.fromRGB(255, 255, 255),
-    Callback = function(v)
-        ESP_SETTINGS.BoxColor = v
-        ESP_SETTINGS.TextColor = v
+        if not v then for p in pairs(Cache) do hideESP(p) end end
     end
 })
+
+pcall(function()
+    ESPToggle:Keybind({
+        Name = "ESP Key",
+        Flag = "ESPKey",
+        Default = Enum.KeyCode.M,
+        Mode = "Toggle",
+    })
+end)
+
+pcall(function()
+    ESPSection:Label("ESP Color"):Colorpicker({
+        Name = "Color",
+        Flag = "ESPColor",
+        Default = Color3.fromRGB(255, 255, 255),
+        Callback = function(v)
+            ESP_SETTINGS.BoxColor = v
+            ESP_SETTINGS.TextColor = v
+        end
+    })
+end)
 
 -- ==================== ESP PREVIEW ====================
 local PREVIEW = {
     MainColor = Color3.fromRGB(28, 28, 28),
     BackgroundColor = Color3.fromRGB(20, 20, 20),
-    AccentColor = Color3.fromRGB(100, 180, 255),
+    AccentColor = ACCENT,
     OutlineColor = Color3.fromRGB(50, 50, 50),
     FontColor = Color3.fromRGB(255, 255, 255),
     DimColor = Color3.fromRGB(160, 160, 160),
@@ -855,25 +850,17 @@ local PreviewGui = Instance.new("ScreenGui")
 PreviewGui.Name = "OridiumESPPreview"
 PreviewGui.ResetOnSpawn = false
 PreviewGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-pcall(function()
-    PreviewGui.Parent = (gethui and gethui()) or CoreGui
-end)
-if not PreviewGui.Parent then
-    PreviewGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-end
+pcall(function() PreviewGui.Parent = (gethui and gethui()) or CoreGui end)
+if not PreviewGui.Parent then PreviewGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
 local Outer = Instance.new("Frame")
-Outer.Name = "Outer"
 Outer.BackgroundColor3 = Color3.new(0, 0, 0)
 Outer.BorderSizePixel = 0
 Outer.Position = UDim2.new(0.5, 290, 0.5, -200)
 Outer.Size = UDim2.new(0, 220, 0, 400)
 Outer.Visible = false
 Outer.Parent = PreviewGui
-
-local OuterCorner = Instance.new("UICorner")
-OuterCorner.CornerRadius = UDim.new(0, 2)
-OuterCorner.Parent = Outer
+Instance.new("UICorner", Outer).CornerRadius = UDim.new(0, 2)
 
 local Inner = Instance.new("Frame")
 Inner.BackgroundColor3 = PREVIEW.MainColor
@@ -938,7 +925,6 @@ local function makeHologram(parent)
     holo.BackgroundTransparency = 1
     holo.Size = UDim2.new(0, 28, 0, 48)
     holo.Parent = parent
-
     local function part(props)
         local f = Instance.new("Frame")
         f.BackgroundColor3 = PREVIEW.AccentColor
@@ -948,13 +934,9 @@ local function makeHologram(parent)
         f.Size = props.s
         f.Parent = holo
         if props.circle then
-            local c = Instance.new("UICorner")
-            c.CornerRadius = UDim.new(1, 0)
-            c.Parent = f
+            Instance.new("UICorner", f).CornerRadius = UDim.new(1, 0)
         end
-        return f
     end
-
     part({ p = UDim2.new(0.5, -6, 0, 2), s = UDim2.new(0, 12, 0, 12), t = 0.35, circle = true })
     part({ p = UDim2.new(0.5, -7, 0, 15), s = UDim2.new(0, 14, 0, 18), t = 0.45 })
     part({ p = UDim2.new(0.5, -7, 0, 34), s = UDim2.new(0, 5, 0, 12), t = 0.5 })
@@ -966,7 +948,6 @@ end
 
 local function createPreviewCard(player)
     if player == LocalPlayer or PreviewCards[player] then return end
-
     local card = Instance.new("Frame")
     card.Name = player.Name
     card.BackgroundColor3 = PREVIEW.MainColor
@@ -974,16 +955,13 @@ local function createPreviewCard(player)
     card.BorderSizePixel = 1
     card.Size = UDim2.new(1, -4, 0, 56)
     card.Parent = List
-
     local accent = Instance.new("Frame")
     accent.BackgroundColor3 = PREVIEW.AccentColor
     accent.BorderSizePixel = 0
     accent.Size = UDim2.new(0, 2, 1, 0)
     accent.Parent = card
-
     local holo = makeHologram(card)
     holo.Position = UDim2.new(0, 8, 0.5, -24)
-
     local nameLbl = Instance.new("TextLabel")
     nameLbl.BackgroundTransparency = 1
     nameLbl.Position = UDim2.new(0, 42, 0, 6)
@@ -995,7 +973,6 @@ local function createPreviewCard(player)
     nameLbl.TextXAlignment = Enum.TextXAlignment.Left
     nameLbl.TextTruncate = Enum.TextTruncate.AtEnd
     nameLbl.Parent = card
-
     local distLbl = Instance.new("TextLabel")
     distLbl.BackgroundTransparency = 1
     distLbl.Position = UDim2.new(0, 42, 0, 22)
@@ -1006,27 +983,18 @@ local function createPreviewCard(player)
     distLbl.TextSize = 11
     distLbl.TextXAlignment = Enum.TextXAlignment.Left
     distLbl.Parent = card
-
     local hpBG = Instance.new("Frame")
     hpBG.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     hpBG.BorderSizePixel = 0
     hpBG.Position = UDim2.new(0, 42, 0, 40)
     hpBG.Size = UDim2.new(1, -54, 0, 6)
     hpBG.Parent = card
-
     local hpBar = Instance.new("Frame")
     hpBar.BackgroundColor3 = Color3.fromRGB(80, 220, 100)
     hpBar.BorderSizePixel = 0
     hpBar.Size = UDim2.new(1, 0, 1, 0)
     hpBar.Parent = hpBG
-
-    PreviewCards[player] = {
-        Card = card,
-        Name = nameLbl,
-        Dist = distLbl,
-        HpBar = hpBar,
-        Accent = accent,
-    }
+    PreviewCards[player] = { Card = card, Name = nameLbl, Dist = distLbl, HpBar = hpBar, Accent = accent }
 end
 
 local function removePreviewCard(player)
@@ -1039,26 +1007,12 @@ end
 local function updatePreviewCard(player)
     local data = PreviewCards[player]
     if not data then return end
-
     local _, _, hum, hrp = getTargetParts(player)
-    if not hrp then
-        data.Card.Visible = false
-        return
-    end
-
+    if not hrp then data.Card.Visible = false return end
     data.Card.Visible = true
-    if player.DisplayName ~= player.Name then
-        data.Name.Text = player.DisplayName .. " (@" .. player.Name .. ")"
-    else
-        data.Name.Text = player.Name
-    end
-
-    local dist = 0
-    if LocalHRP then
-        dist = (hrp.Position - LocalHRP.Position).Magnitude
-    end
+    data.Name.Text = player.DisplayName ~= player.Name and (player.DisplayName .. " (@" .. player.Name .. ")") or player.Name
+    local dist = LocalHRP and (hrp.Position - LocalHRP.Position).Magnitude or 0
     data.Dist.Text = math.floor(dist) .. " studs"
-
     if hum then
         local hp = math.clamp(hum.Health / math.max(hum.MaxHealth, 1), 0, 1)
         data.HpBar.Size = UDim2.new(hp, 0, 1, 0)
@@ -1069,20 +1023,28 @@ end
 
 local function refreshPreviewList()
     for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer then
-            createPreviewCard(p)
-        end
+        if p ~= LocalPlayer then createPreviewCard(p) end
     end
 end
 
-VisualsBox:AddToggle('ESPPreview', {
-    Text = 'ESP Preview',
+ESPSection:Toggle({
+    Name = "ESP Preview",
+    Flag = "ESPPreview",
     Default = false,
-    Tooltip = 'Linoria-styled panel showing player holograms',
     Callback = function(v)
         State.ESPPreview = v
         Outer.Visible = v
         if v then refreshPreviewList() end
+    end
+})
+
+ESPSection:Toggle({
+    Name = "Oridium Lines",
+    Flag = "OridiumLines",
+    Default = false,
+    Callback = function(v)
+        State.OridiumLines = v
+        if not v then for _, line in pairs(OridiumLines or {}) do line.Visible = false end end
     end
 })
 
@@ -1108,36 +1070,15 @@ end
 local function updateOridiumLine(player)
     local line = OridiumLines[player]
     if not line or not Camera then return end
-
     local _, head = getTargetParts(player)
-    if not head then
-        line.Visible = false
-        return
-    end
-
+    if not head then line.Visible = false return end
     local sp, onScreen = Camera:WorldToViewportPoint(head.Position)
-    if not onScreen then
-        line.Visible = false
-        return
-    end
-
+    if not onScreen then line.Visible = false return end
     line.From = ViewportBottom
     line.To = Vector2.new(sp.X, sp.Y)
     line.Color = lightBlue
     line.Visible = true
 end
-
-VisualsBox:AddToggle('OridiumLines', {
-    Text = 'Oridium Lines',
-    Default = false,
-    Tooltip = 'Tracers from bottom of screen to players',
-    Callback = function(v)
-        State.OridiumLines = v
-        if not v then
-            for _, line in pairs(OridiumLines) do line.Visible = false end
-        end
-    end
-})
 
 -- ==================== AIMVIEWER ====================
 local AimviewerCache = {}
@@ -1161,13 +1102,8 @@ end
 local function updateAimviewer(player)
     local line = AimviewerCache[player]
     if not line or not Camera then return end
-
     local _, head = getTargetParts(player)
-    if not head then
-        line.Visible = false
-        return
-    end
-
+    if not head then line.Visible = false return end
     local endPos = head.Position + head.CFrame.LookVector * 80
     local s1, v1 = Camera:WorldToViewportPoint(head.Position)
     local s2, v2 = Camera:WorldToViewportPoint(endPos)
@@ -1180,14 +1116,13 @@ local function updateAimviewer(player)
     end
 end
 
-AimviewerBox:AddToggle('Aimviewer', {
-    Text = 'Aimviewer',
+AimviewerSection:Toggle({
+    Name = "Aimviewer",
+    Flag = "Aimviewer",
     Default = false,
     Callback = function(v)
         State.Aimviewer = v
-        if not v then
-            for _, line in pairs(AimviewerCache) do line.Visible = false end
-        end
+        if not v then for _, line in pairs(AimviewerCache) do line.Visible = false end end
     end
 })
 
@@ -1197,9 +1132,7 @@ local function onPlayerAdded(player)
     createESP(player)
     createAimviewer(player)
     createOridiumLine(player)
-    if State.ESPPreview then
-        createPreviewCard(player)
-    end
+    if State.ESPPreview then createPreviewCard(player) end
 end
 
 local function onPlayerRemoving(player)
@@ -1207,14 +1140,10 @@ local function onPlayerRemoving(player)
     removeAimviewer(player)
     removeOridiumLine(player)
     removePreviewCard(player)
-    if State.CurrentTarget == player then
-        State.CurrentTarget = nil
-    end
+    if State.CurrentTarget == player then State.CurrentTarget = nil end
 end
 
-for _, p in ipairs(Players:GetPlayers()) do
-    onPlayerAdded(p)
-end
+for _, p in ipairs(Players:GetPlayers()) do onPlayerAdded(p) end
 bind("PlayerAdded", Players.PlayerAdded:Connect(onPlayerAdded))
 bind("PlayerRemoving", Players.PlayerRemoving:Connect(onPlayerRemoving))
 
@@ -1224,8 +1153,6 @@ bind("MainLoop", RunService.RenderStepped:Connect(function()
         refreshCamera()
         if not Camera then return end
     end
-
-    -- Keep local character cache warm
     if not LocalHRP and LocalPlayer.Character then
         refreshLocalCharacter(LocalPlayer.Character)
     end
@@ -1247,11 +1174,9 @@ bind("MainLoop", RunService.RenderStepped:Connect(function()
     if State.Aimbot then
         FOVCircle.Position = ViewportCenter
         FOVCircle.Radius = State.AimbotFOV * 0.5
-
         if not State.CurrentTarget or not isValidTarget(State.CurrentTarget) then
             State.CurrentTarget = getClosestPlayer()
         end
-
         local target = State.CurrentTarget
         if target then
             local _, head = getTargetParts(target)
@@ -1272,116 +1197,90 @@ bind("MainLoop", RunService.RenderStepped:Connect(function()
     end
 
     if State.ESP then
-        for player in pairs(Cache) do
-            updateESP(player)
-        end
+        for player in pairs(Cache) do updateESP(player) end
     end
-
     if State.Aimviewer then
-        for player in pairs(AimviewerCache) do
-            updateAimviewer(player)
-        end
+        for player in pairs(AimviewerCache) do updateAimviewer(player) end
     end
-
     if State.OridiumLines then
-        for player in pairs(OridiumLines) do
-            updateOridiumLine(player)
-        end
+        for player in pairs(OridiumLines) do updateOridiumLine(player) end
     end
-
     if State.ESPPreview then
-        for player in pairs(PreviewCards) do
-            updatePreviewCard(player)
-        end
+        for player in pairs(PreviewCards) do updatePreviewCard(player) end
     end
 end))
 
--- ==================== UI SETTINGS + RGB ====================
-local MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Menu')
-
-MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', {
-    Default = 'End',
-    Text = 'Menu keybind',
-    Mode = 'Toggle',
-})
-Library.ToggleKeybind = Options.MenuKeybind
-
-local DEFAULT_ACCENT = Color3.fromRGB(100, 180, 255)
-local DEFAULT_ACCENT_DARK = Color3.fromRGB(60, 120, 180)
-
-local function setRGB(enabled)
-    State.RGB = enabled
-    if not enabled then
-        unbind("RGBLoop")
-        Library.AccentColor = DEFAULT_ACCENT
-        Library.AccentColorDark = DEFAULT_ACCENT_DARK
-        PREVIEW.AccentColor = DEFAULT_ACCENT
-        AccentBar.BackgroundColor3 = DEFAULT_ACCENT
-        if Library.UpdateColorsUsingRegistry then
-            pcall(function() Library:UpdateColorsUsingRegistry() end)
-        end
-        return
-    end
-
-    if Connections.RGBLoop then return end
-
-    bind("RGBLoop", RunService.Heartbeat:Connect(function()
-        if not State.RGB then return end
-        local color = Color3.fromHSV((tick() * 0.25) % 1, 1, 1)
-        Library.AccentColor = color
-        Library.AccentColorDark = color:Lerp(Color3.new(0, 0, 0), 0.35)
-        PREVIEW.AccentColor = color
-        if Outer.Visible then
-            AccentBar.BackgroundColor3 = color
-        end
-        if Library.UpdateColorsUsingRegistry then
-            pcall(function() Library:UpdateColorsUsingRegistry() end)
-        end
-    end))
-end
-
-MenuGroup:AddToggle('RGBMode', {
-    Text = 'RGB',
-    Default = false,
-    Tooltip = 'Makes the UI outline cycle through RGB colors',
-    Callback = function(v)
-        setRGB(v)
-    end
-})
-
-ThemeManager:SetLibrary(Library)
-SaveManager:SetLibrary(Library)
-SaveManager:IgnoreThemeSettings()
-ThemeManager:SetFolder('OridiumInterface')
-SaveManager:SetFolder('OridiumInterface/Configs')
-SaveManager:BuildConfigSection(Tabs['UI Settings'])
-ThemeManager:ApplyToTab(Tabs['UI Settings'])
-
-Library:OnUnload(function()
-    State.Aimbot = false
-    State.Triggerbot = false
-    State.ESP = false
-    State.ESPPreview = false
-    State.OridiumLines = false
-    State.Aimviewer = false
-    State.RGB = false
-    getgenv().Oridium.SilentAim = false
-    getgenv().Oridium.SilentTarget = nil
-
-    unbindAll()
-
-    pcall(function()
-        FOVCircle:Remove()
-        SnapLine:Remove()
-        HeadDot:Remove()
-        TriggerFOVCircle:Remove()
-        for _, data in pairs(Cache) do
-            for _, obj in pairs(data) do obj:Remove() end
-        end
-        for _, line in pairs(AimviewerCache) do line:Remove() end
-        for _, line in pairs(OridiumLines) do line:Remove() end
-        if PreviewGui then PreviewGui:Destroy() end
-    end)
+-- ==================== SETTINGS + RGB ====================
+Window:Category("Settings")
+local SettingsPage = PlayerPage -- fallback
+pcall(function()
+    SettingsPage = Library:CreateSettingsPage(Window, KeybindList)
 end)
 
-SaveManager:LoadAutoloadConfig()
+-- Extra RGB toggle on Player anti section if settings page is opaque
+local RGBSection = AntiSection
+RGBSection:Toggle({
+    Name = "RGB Accent",
+    Flag = "RGBMode",
+    Default = false,
+    Callback = function(v)
+        State.RGB = v
+        if not v then
+            unbind("RGBLoop")
+            pcall(function()
+                Library:ChangeTheme("Accent", ACCENT)
+                Library:ChangeTheme("AccentGradient", ACCENT_GRAD)
+            end)
+            PREVIEW.AccentColor = ACCENT
+            AccentBar.BackgroundColor3 = ACCENT
+            return
+        end
+        if Connections.RGBLoop then return end
+        bind("RGBLoop", RunService.Heartbeat:Connect(function()
+            if not State.RGB then return end
+            local color = Color3.fromHSV((tick() * 0.25) % 1, 1, 1)
+            pcall(function()
+                Library:ChangeTheme("Accent", color)
+                Library:ChangeTheme("AccentGradient", color:Lerp(Color3.new(0, 0, 0), 0.35))
+            end)
+            PREVIEW.AccentColor = color
+            if Outer.Visible then AccentBar.BackgroundColor3 = color end
+        end))
+    end
+})
+
+pcall(function()
+    Window:Init()
+end)
+
+-- Unload hook
+pcall(function()
+    if Library.Unload then
+        local oldUnload = Library.Unload
+        Library.Unload = function(...)
+            State.Aimbot = false
+            State.Triggerbot = false
+            State.ESP = false
+            State.ESPPreview = false
+            State.OridiumLines = false
+            State.Aimviewer = false
+            State.RGB = false
+            getgenv().Oridium.SilentAim = false
+            getgenv().Oridium.SilentTarget = nil
+            unbindAll()
+            pcall(function()
+                FOVCircle:Remove()
+                SnapLine:Remove()
+                HeadDot:Remove()
+                TriggerFOVCircle:Remove()
+                for _, data in pairs(Cache) do
+                    for _, obj in pairs(data) do obj:Remove() end
+                end
+                for _, line in pairs(AimviewerCache) do line:Remove() end
+                for _, line in pairs(OridiumLines) do line:Remove() end
+                if PreviewGui then PreviewGui:Destroy() end
+            end)
+            return oldUnload(Library, ...)
+        end
+    end
+end)
