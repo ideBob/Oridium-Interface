@@ -1,5 +1,5 @@
 -- ============================================================
--- Servo.cc
+-- Oridium.lol
 -- Made by @cuakieffer
 -- UI: Neverlose-style library (migrated from Linoria)
 -- ============================================================
@@ -7,9 +7,9 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ImInsane-1337/neverlose-ui/refs/heads/main/source/library.lua"))()
 
 Library.Folders = {
-    Directory = "ServoCC",
-    Configs = "ServoCC/Configs",
-    Assets = "ServoCC/Assets",
+    Directory = "OridiumLOL",
+    Configs = "OridiumLOL/Configs",
+    Assets = "OridiumLOL/Assets",
 }
 
 local ACCENT = Color3.fromRGB(100, 180, 255)
@@ -38,7 +38,7 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
 -- ==================== STATE ====================
-getgenv().Servo = getgenv().Servo or {
+getgenv().Oridium = getgenv().Oridium or {
     SilentAim = false,
     SilentTarget = nil,
     AntiDetection = false,
@@ -49,7 +49,7 @@ local State = {
     Triggerbot = false,
     ESP = false,
     ESPPreview = false,
-    ServoLines = false,
+    OridiumLines = false,
     Aimviewer = false,
     HighJump = false,
     AntiDetection = false,
@@ -182,7 +182,7 @@ do
     beamR.To = Vector2.new(cx, cy)
 
     local title = Drawing.new("Text")
-    title.Text = "SERVO"
+    title.Text = "ORIDIUM"
     title.Size = 44
     title.Center = true
     title.Outline = true
@@ -193,7 +193,7 @@ do
     title.Transparency = 1
 
     local sub = Drawing.new("Text")
-    sub.Text = ".CC"
+    sub.Text = ".LOL"
     sub.Size = 15
     sub.Center = true
     sub.Outline = true
@@ -327,14 +327,14 @@ end
 
 -- ==================== WINDOW (Neverlose) ====================
 local Window = Library:Window({
-    Name = "Servo.cc",
+    Name = "Oridium.lol",
     SubName = "by @cuakieffer",
     Logo = "0",
 })
 
 local KeybindList = Library:KeybindList("Keybinds")
 pcall(function()
-    Library:Watermark({ "Servo.cc", "by @cuakieffer" })
+    Library:Watermark({ "Oridium.lol", "by @cuakieffer" })
 end)
 
 Window:Category("Combat")
@@ -356,7 +356,7 @@ local AntiSection = PlayerPage:Section({ Name = "Anti Detection", Side = 2 })
 local function notify(title, desc, duration)
     pcall(function()
         Library:Notification({
-            Title = title or "Servo.cc",
+            Title = title or "Oridium.lol",
             Description = desc or "",
             Duration = duration or 4,
         })
@@ -367,7 +367,7 @@ local function notify(title, desc, duration)
 end
 
 task.defer(function()
-    notify("Servo.cc", "Thank You For Executing Servo.cc", 5)
+    notify("Oridium.lol", "Thank You For Executing Oridium.lol", 5)
     pcall(function()
         local sound = Instance.new("Sound")
         sound.SoundId = "rbxassetid://4590657391"
@@ -418,8 +418,8 @@ pcall(function()
     oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
         local method = getnamecallmethod()
         local args = {...}
-        if getgenv().Servo.SilentAim and isDaHood() and method == "FireServer" then
-            local target = getgenv().Servo.SilentTarget
+        if getgenv().Oridium.SilentAim and isDaHood() and method == "FireServer" then
+            local target = getgenv().Oridium.SilentTarget
             if target and target.Parent and typeof(self) == "Instance" and self.Name == "MainEvent" then
                 local action = args[1]
                 if action == "Shoot" or action == "ShootGun" or action == "MousePos" or action == "Cursor" then
@@ -460,10 +460,10 @@ local function getClosestSilentTarget()
 end
 
 bind("SilentTargetUpdater", RunService.Heartbeat:Connect(function()
-    if getgenv().Servo.SilentAim then
-        getgenv().Servo.SilentTarget = getClosestSilentTarget()
+    if getgenv().Oridium.SilentAim then
+        getgenv().Oridium.SilentTarget = getClosestSilentTarget()
     else
-        getgenv().Servo.SilentTarget = nil
+        getgenv().Oridium.SilentTarget = nil
     end
 end))
 
@@ -472,11 +472,11 @@ CombatSection:Toggle({
     Callback = function(v)
         if v and not isDaHood() then
             notify("Silent Aim", "Only works on Da Hood", 3)
-            getgenv().Servo.SilentAim = false
+            getgenv().Oridium.SilentAim = false
             return
         end
-        getgenv().Servo.SilentAim = v
-        if not v then getgenv().Servo.SilentTarget = nil end
+        getgenv().Oridium.SilentAim = v
+        if not v then getgenv().Oridium.SilentTarget = nil end
     end
 })
 
@@ -507,7 +507,7 @@ MovementSection:Slider({
 -- ==================== ANTI DETECTION ====================
 AntiSection:Toggle({
     Name = "Anti Detection", Flag = "AntiDetection", Default = false,
-    Callback = function(v) State.AntiDetection = v; getgenv().Servo.AntiDetection = v end
+    Callback = function(v) State.AntiDetection = v; getgenv().Oridium.AntiDetection = v end
 })
 
 pcall(function()
@@ -586,7 +586,7 @@ CombatSection:Toggle({
     Name = "Aimbot", Flag = "Aimbot", Default = false,
     Callback = function(v)
         State.Aimbot = v
-        FOVCircle.Visible = v or getgenv().Servo.SilentAim
+        FOVCircle.Visible = v or getgenv().Oridium.SilentAim
         if not v then hideAimbotVisuals() end
     end
 })
@@ -728,7 +728,7 @@ local PREVIEW = {
 }
 
 local PreviewGui = Instance.new("ScreenGui")
-PreviewGui.Name = "ServoESPPreview"
+PreviewGui.Name = "OridiumESPPreview"
 PreviewGui.ResetOnSpawn = false
 PreviewGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 pcall(function() PreviewGui.Parent = (gethui and gethui()) or CoreGui end)
@@ -853,23 +853,23 @@ ESPSection:Toggle({
     end
 })
 
--- ==================== SERVO LINES ====================
-local ServoLines = {}
-local function createServoLine(player)
-    if player == LocalPlayer or ServoLines[player] then return end
+-- ==================== ORIDIUM LINES ====================
+local OridiumLines = {}
+local function createOridiumLine(player)
+    if player == LocalPlayer or OridiumLines[player] then return end
     local line = Drawing.new("Line")
     line.Thickness = 1.2
     line.Color = ACCENT
     line.Transparency = 0.7
     line.Visible = false
-    ServoLines[player] = line
+    OridiumLines[player] = line
 end
-local function removeServoLine(player)
-    local line = ServoLines[player]
-    if line then pcall(function() line:Remove() end) ServoLines[player] = nil end
+local function removeOridiumLine(player)
+    local line = OridiumLines[player]
+    if line then pcall(function() line:Remove() end) OridiumLines[player] = nil end
 end
-local function updateServoLine(player)
-    local line = ServoLines[player]
+local function updateOridiumLine(player)
+    local line = OridiumLines[player]
     if not line or not LocalHRP then return end
     local _, _, _, hrp = getTargetParts(player)
     if not hrp then line.Visible = false return end
@@ -882,8 +882,8 @@ local function updateServoLine(player)
     line.Visible = true
 end
 
-ESPSection:Toggle({ Name = "Servo Lines", Flag = "ServoLines", Default = false,
-    Callback = function(v) State.ServoLines = v; if not v then for _, l in pairs(ServoLines) do l.Visible = false end end end })
+ESPSection:Toggle({ Name = "Oridium Lines", Flag = "OridiumLines", Default = false,
+    Callback = function(v) State.OridiumLines = v; if not v then for _, l in pairs(OridiumLines) do l.Visible = false end end end })
 
 -- ==================== AIMVIEWER ====================
 local AimviewerCache = {}
@@ -920,13 +920,13 @@ AimviewerSection:Toggle({ Name = "Aimviewer", Flag = "Aimviewer", Default = fals
 -- ==================== PLAYER TRACKING ====================
 local function onPlayerAdded(player)
     createESP(player)
-    createServoLine(player)
+    createOridiumLine(player)
     createAimviewer(player)
     createPreviewCard(player)
 end
 local function onPlayerRemoving(player)
     removeESP(player)
-    removeServoLine(player)
+    removeOridiumLine(player)
     removeAimviewer(player)
     removePreviewCard(player)
 end
@@ -940,7 +940,7 @@ bind("MainRender", RunService.RenderStepped:Connect(function()
 
     FOVCircle.Position = ViewportCenter
     FOVCircle.Radius = State.AimbotFOV * 0.5
-    FOVCircle.Visible = State.Aimbot or getgenv().Servo.SilentAim
+    FOVCircle.Visible = State.Aimbot or getgenv().Oridium.SilentAim
     FOVCircle.Color = ACCENT
 
     TriggerFOVCircle.Position = ViewportCenter
@@ -981,10 +981,10 @@ bind("MainRender", RunService.RenderStepped:Connect(function()
         for player in pairs(Cache) do hideESP(player) end
     end
 
-    if State.ServoLines then
-        for player in pairs(ServoLines) do updateServoLine(player) end
+    if State.OridiumLines then
+        for player in pairs(OridiumLines) do updateOridiumLine(player) end
     else
-        for _, line in pairs(ServoLines) do line.Visible = false end
+        for _, line in pairs(OridiumLines) do line.Visible = false end
     end
 
     if State.Aimviewer then
@@ -1046,11 +1046,11 @@ pcall(function()
             State.Triggerbot = false
             State.ESP = false
             State.ESPPreview = false
-            State.ServoLines = false
+            State.OridiumLines = false
             State.Aimviewer = false
             State.RGB = false
-            getgenv().Servo.SilentAim = false
-            getgenv().Servo.SilentTarget = nil
+            getgenv().Oridium.SilentAim = false
+            getgenv().Oridium.SilentTarget = nil
             unbindAll()
             pcall(function()
                 if FOVCircle then FOVCircle:Remove() end
@@ -1061,7 +1061,7 @@ pcall(function()
                     for _, obj in pairs(data) do pcall(function() obj:Remove() end) end
                 end
                 for _, line in pairs(AimviewerCache or {}) do pcall(function() line:Remove() end) end
-                for _, line in pairs(ServoLines or {}) do pcall(function() line:Remove() end) end
+                for _, line in pairs(OridiumLines or {}) do pcall(function() line:Remove() end) end
                 if PreviewGui then PreviewGui:Destroy() end
             end)
             return oldUnload(Library, ...)
@@ -1069,4 +1069,4 @@ pcall(function()
     end
 end)
 
-print("[Servo.cc] Loaded successfully - full version")
+print("[Oridium.lol] Loaded successfully - full version")
